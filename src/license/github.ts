@@ -8,6 +8,11 @@
 //    user to the seller, active or past, with its tier (field names checked by introspection 2026-10-10).
 //  - Policy: Pro for an active monthly sponsorship of at least minMonthlyUsd, or a one-time sponsorship of
 //    at least oneTimeUsd paid within oneTimeMonths (0 = lifetime).
+//  - GitHub keeps ONE Sponsorship record per sponsor and sponsorable. A one-time buyer who later starts and
+//    cancels a monthly tier shows only the ended monthly record. So with oneTimeMonths 0 the check also reads
+//    viewer.totalSponsorshipAmountAsSponsorInCents(sponsorableLogins:[seller]) (Int, USD cents, readable by the
+//    viewer only). A total of at least oneTimeUsd is lifetime Pro. If that field is null or fails, the
+//    record rule above decides alone.
 import type { HttpClient } from './types';
 import { formBody, readNumberTime, record } from './util';
 
@@ -168,7 +173,7 @@ export async function waitForDeviceToken(http: HttpClient, cfg: SponsorsConfig, 
 // ---------- sponsorship check ----------
 
 export const SPONSOR_QUERY =
-	'query($login:String!){viewer{login}user(login:$login){viewerIsSponsoring sponsorshipForViewerAsSponsor(activeOnly:false){isActive isOneTimePayment createdAt tierSelectedAt tier{name monthlyPriceInCents monthlyPriceInDollars isOneTime isCustomAmount}}}}';
+	'query($login:String!){viewer{login totalSponsorshipAmountAsSponsorInCents(sponsorableLogins:[$login])}user(login:$login){viewerIsSponsoring sponsorshipForViewerAsSponsor(activeOnly:false){isActive isOneTimePayment createdAt tierSelectedAt tier{name monthlyPriceInCents monthlyPriceInDollars isOneTime isCustomAmount}}}}';
 
 export type NoReason = 'not-sponsoring' | 'ended' | 'below-tier' | 'one-time-below' | 'one-time-expired' | 'one-time-off';
 
@@ -222,6 +227,32 @@ export function judgeSponsorship(s: Record<string, unknown> | null, login: strin
 	return { kind: 'pro', login, tierName, usd: amount, oneTime: true, expiresAt: null };
 }
 
+export const TOTAL_FIELD = 'totalSponsorshipAmountAsSponsorInCents';
+
+/** True when a GraphQL error is about the total-paid field only (its path ends in that field). */
+function isTotalFieldError(e: unknown): boolean {
+	const path = record(e).path;
+	return Array.isArray(path) && path[path.length - 1] === TOTAL_FIELD;
+}
+
+/** The total the viewer has paid to the seller in USD cents, or null when GitHub did not give a number. */
+export function readTotalCents(viewer: Record<string, unknown>): number | null {
+	const v = viewer[TOTAL_FIELD];
+	return typeof v === 'number' && Number.isInteger(v) && v >= 0 ? v : null;
+}
+
+/**
+ * Lifts a "no" to lifetime Pro when the viewer has paid at least oneTimeUsd in total.
+ * Only with a lifetime one-time rule (oneTimeUsd > 0, oneTimeMonths 0). Pure.
+ */
+export function applyTotalPaid(v: SponsorsVerdict, totalCents: number | null, cfg: SponsorsConfig): SponsorsVerdict {
+	if (v.kind !== 'no' || totalCents === null) return v;
+	if (cfg.oneTimeUsd <= 0 || cfg.oneTimeMonths > 0) return v;
+	const total = totalCents / 100;
+	if (total < cfg.oneTimeUsd) return v;
+	return { kind: 'pro', login: v.login, tierName: `${usd(total)} paid in total`, usd: total, oneTime: true, expiresAt: null };
+}
+
 /** Reads a GraphQL reply into a verdict. Pure, so the golden vectors run it on recorded replies. */
 export function judgeGraphqlReply(status: number, json: unknown, cfg: SponsorsConfig, now: number): SponsorsVerdict {
 	if (status === 401) return { kind: 'signed-out', message: 'GitHub no longer accepts this sign in (it was revoked or expired). Sign in again.' };
@@ -230,21 +261,25 @@ export function judgeGraphqlReply(status: number, json: unknown, cfg: SponsorsCo
 	if (status === 429 || (status === 403 && msg.includes('rate limit'))) return { kind: 'error', reason: 'GitHub rate limit reached' };
 	if (status !== 200) return { kind: 'error', reason: `HTTP ${status}` };
 	const data = record(j.data);
-	const login = str(record(data.viewer).login);
+	const viewer = record(data.viewer);
+	const login = str(viewer.login);
 	const user = data.user;
+	// An error on the total-paid field alone is not fatal: the sponsorship record decides.
+	const errors = Array.isArray(j.errors) ? j.errors.filter((e) => !isTotalFieldError(e)) : [];
 	// A token without read:user reads viewerIsSponsoring only; every sponsorship field fails with
 	// INSUFFICIENT_SCOPES (owner's real device-flow test, 2026-10-10). The fix is a new sign in with read:user.
-	if (Array.isArray(j.errors) && j.errors.some((e) => str(record(e).type) === 'INSUFFICIENT_SCOPES')) {
+	if (errors.some((e) => str(record(e).type) === 'INSUFFICIENT_SCOPES')) {
 		return { kind: 'signed-out', message: 'This sign in lacks read-only profile access (read:user), which the sponsorship check needs. Sign in again.' };
 	}
 	// Any other GraphQL error is not a definite "no".
-	if (Array.isArray(j.errors) && j.errors.length > 0) {
-		const first = str(record(j.errors[0]).type) || str(record(j.errors[0]).message);
+	if (errors.length > 0) {
+		const first = str(record(errors[0]).type) || str(record(errors[0]).message);
 		return { kind: 'error', reason: `GitHub query error ${first.slice(0, 80)}` };
 	}
 	if (login === '' || typeof user !== 'object' || user === null) return { kind: 'error', reason: 'unexpected reply from GitHub' };
 	const s = (user as Record<string, unknown>).sponsorshipForViewerAsSponsor;
-	return judgeSponsorship(typeof s === 'object' && s !== null ? (s as Record<string, unknown>) : null, login, cfg, now);
+	const verdict = judgeSponsorship(typeof s === 'object' && s !== null ? (s as Record<string, unknown>) : null, login, cfg, now);
+	return applyTotalPaid(verdict, readTotalCents(viewer), cfg);
 }
 
 /** One request: the sponsorship of the signed-in user to cfg.sponsorLogin. Rejects only on network failure. */

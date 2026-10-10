@@ -15,5 +15,5 @@ export const SPONSORS: SponsorsConfig = {
 
 export const PRO_UI = {
 	proSummary: 'Pro freezes 2 or 3 columns, sets the frozen columns for single files, and pins the last column to the right edge.',
-	priceText: 'Sponsor $5 a month or $15 once.',
+	priceText: 'Sponsor $5 a month, or $15 once. When you have paid $15 in total, Pro stays on.',
 };
