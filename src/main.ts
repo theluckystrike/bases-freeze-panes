@@ -5,7 +5,7 @@ import { MAX_FROZEN } from './layout';
 import { NoteTables, type NoteTableScope } from './note-tables';
 import { END_CLASS, FROZEN_CLASS, LAST_CLASS, ROW_CLASS, installColumnPatch, type ColumnPatch } from './patch';
 import { SPONSORS } from './pro';
-import { DEFAULT_SETTINGS, effectiveFor, normalizeSettings, renameFile, withFileChoice, type FreezeSettings } from './scope';
+import { DEFAULT_SETTINGS, effectiveFor, normalizeSettings, removeFile, renameFile, withFileChoice, type FreezeSettings } from './scope';
 import { BasesFreezePanesSettingTab } from './settings';
 
 const SCOPE_ATTR = 'data-bfp-columns';
@@ -89,8 +89,18 @@ export default class BasesFreezePanesPlugin extends Plugin {
 		});
 		this.registerEvent(
 			this.app.vault.on('rename', (file, oldPath) => {
-				if (!this.settings.files[oldPath]) return;
-				this.settings = renameFile(this.settings, oldPath, file.path);
+				const next = renameFile(this.settings, oldPath, file.path);
+				if (next === this.settings) return;
+				this.settings = next;
+				void this.saveAndRefresh();
+			}),
+		);
+		// A new file at the same path must not get the choice of a deleted file.
+		this.registerEvent(
+			this.app.vault.on('delete', (file) => {
+				const next = removeFile(this.settings, file.path);
+				if (next === this.settings) return;
+				this.settings = next;
 				void this.saveAndRefresh();
 			}),
 		);
@@ -158,8 +168,10 @@ export default class BasesFreezePanesPlugin extends Plugin {
 	/** Writes the current choice onto every tab, then asks each table on screen to lay out its rows again. */
 	refresh(): void {
 		const scopes: NoteTableScope[] = [];
+		const seen = new Set<HTMLElement>();
 		this.app.workspace.iterateAllLeaves((leaf) => {
 			this.markLeaf(leaf);
+			seen.add(leaf.view.containerEl);
 			const file = (leaf.view as { file?: unknown }).file;
 			if (!(file instanceof TFile) || file.extension !== 'md') return;
 			const eff = effectiveFor(this.settings, file.path, this.isPro());
@@ -168,6 +180,12 @@ export default class BasesFreezePanesPlugin extends Plugin {
 			}
 		});
 		this.noteTables.sync(scopes);
+		// Release the elements of closed tabs and replaced views, so the set does not keep their DOM.
+		for (const el of this.marked) {
+			if (seen.has(el)) continue;
+			this.unmark(el);
+			this.marked.delete(el);
+		}
 	}
 
 	private markLeaf(leaf: WorkspaceLeaf): void {

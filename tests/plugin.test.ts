@@ -91,4 +91,20 @@ describe('BasesFreezePanesPlugin', () => {
 		expect(plugin.columnsFor(document.createElement('div'))).toBe(1);
 		expect(plugin.pinLastFor(document.createElement('div'))).toBe(false);
 	});
+
+	it('does not keep the elements of closed tabs after a refresh', async () => {
+		const plugin = makePlugin();
+		await plugin.loadSettings();
+		const open = createDiv();
+		const closed = createDiv();
+		let leaves = [{ view: { containerEl: open } }, { view: { containerEl: closed } }];
+		vi.spyOn(plugin.app.workspace, 'iterateAllLeaves').mockImplementation((callback) => leaves.forEach((leaf) => callback(leaf as never)));
+		plugin.refresh();
+		expect(closed.getAttribute('data-bfp-columns')).toBe('1');
+		leaves = [{ view: { containerEl: open } }];
+		plugin.refresh();
+		expect((plugin as unknown as { marked: Set<HTMLElement> }).marked).toEqual(new Set([open]));
+		expect(closed.hasAttribute('data-bfp-columns')).toBe(false);
+		expect(open.getAttribute('data-bfp-columns')).toBe('1');
+	});
 });

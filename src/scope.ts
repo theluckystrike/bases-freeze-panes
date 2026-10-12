@@ -100,12 +100,30 @@ export function withFileChoice(settings: FreezeSettings, path: string, choice: F
 	return { ...settings, files };
 }
 
-/** Moves a file's choice when the file is renamed or moved. */
+/** True when key is path, or the path of a file in the folder at path. */
+function isAtOrUnder(key: string, path: string): boolean {
+	return key === path || key.startsWith(`${path}/`);
+}
+
+/** Moves the choices of a renamed or moved file, or of the files in a renamed or moved folder. */
 export function renameFile(settings: FreezeSettings, oldPath: string, newPath: string): FreezeSettings {
-	const choice = settings.files[oldPath];
-	if (!choice) return settings;
+	// Own keys only, so a folder named "constructor" never matches an Object prototype key.
+	const keys = Object.keys(settings.files).filter((key) => isAtOrUnder(key, oldPath));
+	if (keys.length === 0) return settings;
 	const files = { ...settings.files };
-	delete files[oldPath];
-	files[newPath] = choice;
+	for (const key of keys) {
+		const choice = files[key];
+		delete files[key];
+		if (choice) files[newPath + key.slice(oldPath.length)] = choice;
+	}
+	return { ...settings, files };
+}
+
+/** Removes the choices of a deleted file, or of the files in a deleted folder. */
+export function removeFile(settings: FreezeSettings, path: string): FreezeSettings {
+	const keys = Object.keys(settings.files).filter((key) => isAtOrUnder(key, path));
+	if (keys.length === 0) return settings;
+	const files = { ...settings.files };
+	for (const key of keys) delete files[key];
 	return { ...settings, files };
 }

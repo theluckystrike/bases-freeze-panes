@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_SETTINGS, effectiveFor, normalizeSettings, renameFile, withFileChoice } from '../src/scope';
+import { DEFAULT_SETTINGS, effectiveFor, normalizeSettings, removeFile, renameFile, withFileChoice } from '../src/scope';
 
 describe('effectiveFor', () => {
 	it('uses the defaults for a file without a choice', () => {
@@ -58,6 +58,34 @@ describe('file choices', () => {
 
 	it('leaves settings alone when the renamed file had no choice', () => {
 		expect(renameFile(DEFAULT_SETTINGS, 'x.base', 'y.base')).toBe(DEFAULT_SETTINGS);
+	});
+
+	it('does not read Object prototype keys as file choices', () => {
+		expect(renameFile(DEFAULT_SETTINGS, 'constructor', 'Archive')).toBe(DEFAULT_SETTINGS);
+		expect(removeFile(DEFAULT_SETTINGS, 'toString')).toBe(DEFAULT_SETTINGS);
+	});
+
+	it('moves the choices of the files in a renamed folder', () => {
+		let s = withFileChoice(DEFAULT_SETTINGS, 'Books/a.base', { columns: 2 });
+		s = withFileChoice(s, 'Books/Old/b.md', { off: true });
+		s = withFileChoice(s, 'Books2/c.base', { off: true });
+		s = renameFile(s, 'Books', 'Library');
+		expect(s.files).toEqual({ 'Library/a.base': { columns: 2 }, 'Library/Old/b.md': { off: true }, 'Books2/c.base': { off: true } });
+		// The rename event of each file in the folder then finds nothing to move.
+		expect(renameFile(s, 'Books/a.base', 'Library/a.base')).toBe(s);
+	});
+
+	it('removes the choice of a deleted file, so a new file at that path starts with the defaults', () => {
+		const s = withFileChoice(withFileChoice(DEFAULT_SETTINGS, 'a.base', { off: true }), 'b.base', { columns: 2 });
+		expect(removeFile(s, 'a.base').files).toEqual({ 'b.base': { columns: 2 } });
+		expect(removeFile(s, 'x.base')).toBe(s);
+	});
+
+	it('removes the choices of the files in a deleted folder', () => {
+		let s = withFileChoice(DEFAULT_SETTINGS, 'Books/a.base', { off: true });
+		s = withFileChoice(s, 'Books/Old/b.md', { columns: 1 });
+		s = withFileChoice(s, 'Books.base', { off: true });
+		expect(removeFile(s, 'Books').files).toEqual({ 'Books.base': { off: true } });
 	});
 });
 

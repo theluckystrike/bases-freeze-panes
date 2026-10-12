@@ -67,7 +67,7 @@ Two commands change one base file or note:
 - "Turn frozen panes on or off for the current file" is free.
 - "Set frozen columns for the current file" picks 0 to 3 columns for that file. This one needs Pro.
 
-The plugin stores each choice under the file path, moves it when you rename the file, and lists all choices in the settings.
+Each choice moves with its file or folder when you rename or move it, and goes away when you delete the file. The settings list the choices.
 
 ## Install
 
@@ -83,8 +83,6 @@ Bases Freeze Panes needs Obsidian 1.13.4 or newer and the Bases core plugin. It 
 2. Open a wide base and scroll down and to the right.
 3. To compare with the normal table, run "Turn frozen panes on or off". Run it again to turn freezing back on.
 4. For Pro, sponsor on GitHub, then open the settings and select "Sign in with GitHub".
-
-Set command hotkeys in Settings, then Hotkeys.
 
 ## Pro
 

@@ -1,5 +1,11 @@
 # bases-freeze-panes
 
+## 1.2.1
+
+### Patch Changes
+
+- f431fa8: File choices now follow a renamed folder and go away with a deleted file, and closed tabs no longer stay in memory.
+
 ## 1.2.0
 
 ### Minor Changes

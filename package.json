@@ -1,6 +1,6 @@
 {
 	"name": "bases-freeze-panes",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"private": true,
 	"description": "Keeps the header row and the first columns of a Bases table in view while you scroll, in base files and in bases embedded in notes.",
 	"main": "main.js",
