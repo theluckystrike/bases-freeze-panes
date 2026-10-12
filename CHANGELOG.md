@@ -1,5 +1,11 @@
 # bases-freeze-panes
 
+## 1.1.2
+
+### Patch Changes
+
+- efdff8f: Correct the GitHub Sponsors payment, check and token storage text in the README.
+
 ## 1.1.1
 
 ### Patch Changes
