@@ -39,6 +39,11 @@ export class BasesFreezePanesSettingTab extends PluginSettingTab {
 				control: { type: 'toggle', key: 'freezeHeader', defaultValue: DEFAULT_SETTINGS.freezeHeader },
 			},
 			{
+				name: 'Freeze Markdown and Dataview tables',
+				desc: 'Free. Keeps rendered note tables in a scroll box. Uses the header switch and freezes the first column when Frozen columns is above 0. The height setting also applies to these tables.',
+				control: { type: 'toggle', key: 'freezeNoteTables', defaultValue: DEFAULT_SETTINGS.freezeNoteTables },
+			},
+			{
 				name: 'Frozen columns',
 				desc: `How many columns on the left stay in view when you scroll sideways, from 0 to ${MAX_FROZEN}. The first column is usually the file name. ${FREE_COLUMNS} column is free; 2 and 3 need pro.`,
 				control: { type: 'slider', key: 'columns', defaultValue: DEFAULT_SETTINGS.columns, min: 0, max: MAX_FROZEN, step: 1 },

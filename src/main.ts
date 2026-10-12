@@ -2,6 +2,7 @@ import { Notice, Plugin, SuggestModal, TFile, type App, type WorkspaceLeaf } fro
 import type { SponsorsManager } from './license/index';
 import { createGitHubSponsors, guardSponsorsPro } from './license/github-obsidian';
 import { MAX_FROZEN } from './layout';
+import { NoteTables, type NoteTableScope } from './note-tables';
 import { END_CLASS, FROZEN_CLASS, LAST_CLASS, ROW_CLASS, installColumnPatch, type ColumnPatch } from './patch';
 import { SPONSORS } from './pro';
 import { DEFAULT_SETTINGS, effectiveFor, normalizeSettings, renameFile, withFileChoice, type FreezeSettings } from './scope';
@@ -25,6 +26,7 @@ export default class BasesFreezePanesPlugin extends Plugin {
 	private settingTab: BasesFreezePanesSettingTab | null = null;
 	private patch: ColumnPatch | null = null;
 	private marked = new Set<HTMLElement>();
+	private noteTables = new NoteTables();
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
@@ -95,6 +97,7 @@ export default class BasesFreezePanesPlugin extends Plugin {
 	}
 
 	onunload(): void {
+		this.noteTables.clear();
 		this.patch?.remove();
 		this.patch = null;
 		for (const el of this.marked) this.unmark(el);
@@ -154,7 +157,17 @@ export default class BasesFreezePanesPlugin extends Plugin {
 
 	/** Writes the current choice onto every tab, then asks each table on screen to lay out its rows again. */
 	refresh(): void {
-		this.app.workspace.iterateAllLeaves((leaf) => this.markLeaf(leaf));
+		const scopes: NoteTableScope[] = [];
+		this.app.workspace.iterateAllLeaves((leaf) => {
+			this.markLeaf(leaf);
+			const file = (leaf.view as { file?: unknown }).file;
+			if (!(file instanceof TFile) || file.extension !== 'md') return;
+			const eff = effectiveFor(this.settings, file.path, this.isPro());
+			if (this.settings.freezeNoteTables && (eff.header || eff.columns > 0)) {
+				scopes.push({ root: leaf.view.containerEl, header: eff.header, column: eff.columns > 0, height: this.settings.embedHeight });
+			}
+		});
+		this.noteTables.sync(scopes);
 	}
 
 	private markLeaf(leaf: WorkspaceLeaf): void {

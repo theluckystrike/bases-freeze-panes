@@ -11,6 +11,8 @@ export interface FileChoice {
 export interface FreezeSettings {
 	enabled: boolean;
 	freezeHeader: boolean;
+	/** Free: freeze rendered Markdown and Dataview tables. */
+	freezeNoteTables: boolean;
 	columns: number;
 	/** Pro: pin the last column to the end edge. */
 	freezeLast: boolean;
@@ -27,6 +29,7 @@ export interface Effective {
 export const DEFAULT_SETTINGS: FreezeSettings = {
 	enabled: true,
 	freezeHeader: true,
+	freezeNoteTables: false,
 	columns: 1,
 	freezeLast: false,
 	embedHeight: 500,
@@ -79,6 +82,7 @@ export function normalizeSettings(saved: unknown): FreezeSettings {
 	const height = typeof s.embedHeight === 'number' && Number.isFinite(s.embedHeight) ? Math.round(s.embedHeight) : DEFAULT_SETTINGS.embedHeight;
 	return {
 		enabled: typeof s.enabled === 'boolean' ? s.enabled : DEFAULT_SETTINGS.enabled,
+		freezeNoteTables: typeof s.freezeNoteTables === 'boolean' ? s.freezeNoteTables : DEFAULT_SETTINGS.freezeNoteTables,
 		freezeHeader: typeof s.freezeHeader === 'boolean' ? s.freezeHeader : DEFAULT_SETTINGS.freezeHeader,
 		columns: clampColumns(s.columns, DEFAULT_SETTINGS.columns),
 		freezeLast: typeof s.freezeLast === 'boolean' ? s.freezeLast : DEFAULT_SETTINGS.freezeLast,

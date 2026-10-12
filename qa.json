@@ -99,5 +99,13 @@
 				"hold": 2200
 			}
 		]
+	},
+	{
+		"feature": "note-tables",
+		"caption": "A rendered Markdown table keeps its header and first column in view.",
+		"note": "Project review.md",
+		"eval": "(async () => { const p = app.plugins.plugins['bases-freeze-panes']; p.settings.freezeNoteTables = true; p.settings.columns = 1; p.refresh(); await app.workspace.activeLeaf.setViewState({ type: 'markdown', state: { file: app.workspace.getActiveFile().path, mode: 'preview' } }); await new Promise(r => setTimeout(r, 700)); p.refresh(); const box = [...document.querySelectorAll('.workspace-leaf.mod-active .bfp-note-table')].find(el => el.offsetParent); if (!box) throw new Error('No note table'); const head = box.querySelector('thead th'); const before = head.getBoundingClientRect(); box.scrollTop = 240; box.scrollLeft = 300; await new Promise(r => setTimeout(r, 500)); const after = head.getBoundingClientRect(); if (box.scrollTop < 200 || box.scrollLeft < 100 || Math.abs(before.top-after.top) > 2 || Math.abs(before.left-after.left) > 2) throw new Error('Note panes did not stay in view ' + JSON.stringify({top:box.scrollTop,left:box.scrollLeft,before:[before.top,before.left],after:[after.top,after.left]})); return 'note table panes PASS'; })()",
+		"after": "app.plugins.plugins['bases-freeze-panes'].settings.freezeNoteTables = false; app.plugins.plugins['bases-freeze-panes'].refresh(); 'ok'",
+		"wait": 900
 	}
 ]

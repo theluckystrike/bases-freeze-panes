@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { App } from 'obsidian-test-mocks/obsidian';
 import BasesFreezePanesPlugin from '../src/main';
 import { DEFAULT_SETTINGS } from '../src/scope';
@@ -10,6 +10,58 @@ function makePlugin() {
 }
 
 describe('BasesFreezePanesPlugin', () => {
+	it('note tables are off by default and respect the file and main switches when on', async () => {
+		const plugin = makePlugin();
+		await plugin.loadSettings();
+		const root = createDiv('markdown-rendered');
+		const table = root.createEl('table');
+		const file = plugin.app.vault.getAbstractFileByPath('notes/a.md');
+		const leaf = { view: { containerEl: root, file } };
+		vi.spyOn(plugin.app.workspace, 'iterateAllLeaves').mockImplementation((callback) => callback(leaf as never));
+		plugin.refresh();
+		expect(table.parentElement).toBe(root);
+		plugin.settings.freezeNoteTables = true;
+		plugin.refresh();
+		expect(table.parentElement?.classList.contains('bfp-note-table')).toBe(true);
+		plugin.settings.files = { 'notes/a.md': { off: true } };
+		plugin.refresh();
+		expect(table.parentElement).toBe(root);
+		plugin.settings.files = {};
+		plugin.settings.columns = 0;
+		plugin.refresh();
+		expect(table.parentElement?.classList.contains('bfp-note-column')).toBe(false);
+		plugin.settings.enabled = false;
+		plugin.refresh();
+		expect(table.parentElement).toBe(root);
+		plugin.settings.enabled = true;
+		plugin.settings.columns = 3;
+		plugin.columnsSupported = false;
+		plugin.refresh();
+		expect(table.parentElement?.classList.contains('bfp-note-column')).toBe(true);
+		plugin.settings.freezeNoteTables = false;
+		plugin.refresh();
+		expect(table.parentElement).toBe(root);
+	});
+
+	it('note tables change only note tabs, not canvas tabs or views without a file', async () => {
+		const app = App.createConfigured__({ files: { 'notes/a.md': '# A', 'boards/b.canvas': '{}' } });
+		const plugin = new BasesFreezePanesPlugin(app as never, manifest as never);
+		await plugin.loadSettings();
+		plugin.settings.freezeNoteTables = true;
+		const roots = [createDiv('markdown-rendered'), createDiv('markdown-rendered'), createDiv('markdown-rendered')];
+		const tables = roots.map((root) => root.createEl('table'));
+		const leaves = [
+			{ view: { containerEl: roots[0], file: app.vault.getAbstractFileByPath('notes/a.md') } },
+			{ view: { containerEl: roots[1], file: app.vault.getAbstractFileByPath('boards/b.canvas') } },
+			{ view: { containerEl: roots[2] } },
+		];
+		vi.spyOn(app.workspace, 'iterateAllLeaves').mockImplementation((callback) => leaves.forEach((leaf) => callback(leaf as never)));
+		plugin.refresh();
+		expect(tables.map((table) => table.parentElement?.classList.contains('bfp-note-table'))).toEqual([true, false, false]);
+		plugin.onunload();
+		expect(tables[0]!.parentElement).toBe(roots[0]);
+	});
+
 	it('loads default settings from an empty data.json', async () => {
 		const plugin = makePlugin();
 		await plugin.loadSettings();

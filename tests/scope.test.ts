@@ -62,6 +62,11 @@ describe('file choices', () => {
 });
 
 describe('normalizeSettings', () => {
+	it('keeps note tables off for old data and accepts only a boolean choice', () => {
+		expect(normalizeSettings({ columns: 2 }).freezeNoteTables).toBe(false);
+		expect(normalizeSettings({ freezeNoteTables: 'yes' }).freezeNoteTables).toBe(false);
+		expect(normalizeSettings({ freezeNoteTables: true }).freezeNoteTables).toBe(true);
+	});
 	it('returns the defaults for empty or broken data', () => {
 		expect(normalizeSettings(null)).toEqual(DEFAULT_SETTINGS);
 		expect(normalizeSettings('text')).toEqual(DEFAULT_SETTINGS);

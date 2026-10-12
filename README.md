@@ -1,8 +1,8 @@
 # Bases Freeze Panes
 
-Bases Freeze Panes keeps the header row and the first column of a Bases table in view while you scroll, like Freeze Panes in a spreadsheet. Scroll down and the column names stay at the top. Scroll to the right and the note names stay on the left, so you always know which row you are editing.
+Bases Freeze Panes keeps the header row and the first column of a Bases table in view while you scroll, like Freeze Panes in a spreadsheet.
 
-It works in base files, in bases embedded in notes, and in base code blocks. It changes how the table looks on screen and nothing else. Your notes and base files stay exactly as they are.
+It works in base files, in bases embedded in notes, and in base code blocks. Your notes and base files stay as they are.
 
 The header row and one frozen column are free. Pro adds 2 or 3 frozen columns, a column count for single files, and a pinned last column. Pro costs $5 a month, or $15 once, through GitHub Sponsors. A total payment of $15 meets the payment requirement for Pro without further payment. Sign-in and the checks below still apply.
 
@@ -16,15 +16,23 @@ The header row and one frozen column are free. Pro adds 2 or 3 frozen columns, a
 
 Open a base file with more columns than fit on the screen. Scroll to the right and the first column stays where it was. The other columns slide under it, and a thin line marks its edge.
 
-A CSS snippet cannot do this. The core table draws only the columns that are in view, so once you scroll past the first column, its cells are gone from the page. Bases Freeze Panes keeps those cells on the page and pins them. It also gives the header row a solid background, so rows never show through it.
+The plugin keeps frozen cells on the page and pins them. The header has a solid background.
 
 ### Embedded bases keep their header
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/embedded-base.png" alt="A base embedded in a note scrolls inside its own box, and its header row sticks at the top" width="720">
 
-A base embedded in a note, such as `![[Reading log.base]]`, normally grows to the full height of all its rows. Then the note scrolls instead of the table, and the header row scrolls away.
+A base embedded in a note normally grows to the full height of its rows. Its header then scrolls away with the note.
 
 Bases Freeze Panes gives embedded tables a maximum height, 500 pixels by default. A taller table scrolls inside this box, so its header row sticks to the top. Short tables keep their normal height.
+
+### Frozen Markdown and Dataview tables
+
+<img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/note-tables.png" alt="A Markdown table in its own scroll box with the header and first column in view" width="720">
+
+Turn on "Freeze Markdown and Dataview tables" in the settings. This free feature gives each rendered table in a note tab its own scroll box. Hover previews and canvas cards do not change. The header stays at the top, and the first column stays on the left. Cell text does not wrap, so a wide table scrolls to the side. It works in reading view and live preview. Source text does not change.
+
+The main switch and the file switch also apply. Turn off "Freeze the header row" to let the header scroll. Set "Frozen columns" to 0 to let the first column scroll. Note tables freeze at most one column, with or without Pro. They use the embedded table height setting. Dataview queries need the Dataview plugin.
 
 ### Two or three frozen columns (Pro)
 
@@ -54,7 +62,7 @@ Frozen cells must cover the cells that slide under them. Bases Freeze Panes pain
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/file-columns.png" alt="Set frozen columns for the current file picks 0 to 3 columns for one base or note" width="720">
 
-Two commands change one file only. The open file can be a base file or a note with embedded bases.
+Two commands change one base file or note:
 
 - "Turn frozen panes on or off for the current file" is free.
 - "Set frozen columns for the current file" picks 0 to 3 columns for that file. This one needs Pro.
@@ -71,18 +79,18 @@ Bases Freeze Panes needs Obsidian 1.13.4 or newer and the Bases core plugin. It 
 
 ## Usage
 
-1. Turn on the plugin. Every table view of a base now has a frozen header row and one frozen column.
+1. Turn on the plugin. Bases tables now have a frozen header and first column.
 2. Open a wide base and scroll down and to the right.
 3. To compare with the normal table, run "Turn frozen panes on or off". Run it again to turn freezing back on.
 4. For Pro, sponsor on GitHub, then open the settings and select "Sign in with GitHub".
 
-The plugin sets no default hotkeys. You can give any command a hotkey in Settings, then Hotkeys.
+Set command hotkeys in Settings, then Hotkeys.
 
 ## Pro
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/pro-settings.png" alt="The Pro section of the settings after sign in, with the GitHub account and the Pro status" width="720">
 
-Pro unlocks 2 or 3 frozen columns, column counts for single files, and the pinned last column. To get it:
+To get Pro:
 
 1. Sponsor [theluckystrike on GitHub Sponsors](https://github.com/sponsors/theluckystrike) with $5 a month, or $15 once. A total payment of $15 meets the payment requirement for Pro without further payment. Sign-in and the checks below still apply.
 2. In Obsidian, open the settings of Bases Freeze Panes and select "Sign in with GitHub".
@@ -98,6 +106,7 @@ The status line then shows your GitHub login and the tier. If you sponsor after 
 | --- | --- | --- |
 | Freeze panes | On | On or off |
 | Freeze the header row | On | On or off |
+| Freeze Markdown and Dataview tables | Off | On or off (free) |
 | Frozen columns | 1 | 0 to 3 (2 and 3 need Pro) |
 | Freeze the last column | Off | On or off (Pro) |
 | Embedded table height | 500 | 200 to 1200 pixels, in steps of 50 |
@@ -137,8 +146,6 @@ Until you select "Sign in with GitHub" in the settings, Bases Freeze Panes makes
 After sign in, Bases Freeze Panes sends one query to `https://api.github.com/graphql`. It checks if the signed-in account sponsors theluckystrike. It asks for the tier and the total payment to theluckystrike. The plugin reuses a successful check for 7 days. Failed checks can retry after 6 hours. Select Refresh to request an earlier check. It sends no note content, file names or other vault data, and it has no telemetry.
 
 After a successful check, Pro can work offline for up to 14 days. Sign out or a negative sponsorship answer turns Pro off. The plugin stores the GitHub token through the secret storage API of Obsidian. It does not put the token in its saved settings or its local sponsorship data. The local storage of this device keeps your GitHub login, the tier and the time of the last check. Sign out clears the token. You can also revoke the access in your GitHub settings, under Applications.
-
-## Support
 
 ## Support
 

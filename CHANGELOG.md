@@ -1,5 +1,11 @@
 # bases-freeze-panes
 
+## 1.2.0
+
+### Minor Changes
+
+- f58aabc: Add a free setting to freeze the header and first column in rendered Markdown and Dataview tables.
+
 ## 1.1.2
 
 ### Patch Changes
