@@ -1,10 +1,10 @@
 # Bases Freeze Panes
 
-Bases Freeze Panes keeps the header row and the first column of a Bases table in view while you scroll, like Freeze Panes in a spreadsheet.
+Bases Freeze Panes keeps the header and first column of a Bases table in view while you scroll, like a spreadsheet.
 
-It works in base files, in bases embedded in notes, and in base code blocks. Your notes and base files stay as they are.
+It supports base files, note embeds and base code blocks.
 
-The header row and one frozen column are free. Pro adds 2 or 3 frozen columns, a column count for single files, and a pinned last column. Pro costs $5 a month, or $15 once, through GitHub Sponsors. A total payment of $15 meets the payment requirement for Pro without further payment. Sign-in and the checks below still apply.
+The header row and one frozen column are free. Pro adds 2 or 3 frozen columns, a column count for single files, a pinned last column, and a chosen property pin. Pro costs $5 a month, or $15 once, through GitHub Sponsors. A total payment of $15 meets the payment requirement for Pro without further payment. Sign-in and the checks below still apply.
 
 ## Features
 
@@ -44,7 +44,15 @@ With Pro you can freeze 2 or 3 columns, for example the file name and the author
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/last-column.png" alt="The last column of a wide base stays at the right edge while the middle columns scroll" width="720">
 
-Turn on "Freeze the last column" and the last column stays at the right edge of the table, while the middle columns scroll between the frozen columns. Use it for a status, a total or a due date.
+Turn on "Freeze the last column" to keep it at the right edge. The middle columns scroll between the frozen columns. Use it for a status, a total or a due date.
+
+### Pin a property (Pro)
+
+Type a property name in "Pin a property", for example `author`, `note.author` or `formula.total`. When that property is visible in a Bases table, it stays beside the leading frozen columns. It can be a middle column. You do not need to move it to the start of the column order. A hidden property stays hidden.
+
+Clear the field to remove this pin. The main switch and the file switch apply. If the property is also the last column, the property pin uses the left edge. This setting does not change rendered Markdown or Dataview tables.
+
+<img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/pin-property.png" alt="The author property stays beside the title while the middle columns scroll" width="720">
 
 ### Reading view, live preview and code blocks
 
@@ -56,7 +64,7 @@ Freezing works wherever a table view of a base shows up in a note: embedded base
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/light-theme.png" alt="The frozen cells stay solid in the light theme" width="720">
 
-Frozen cells must cover the cells that slide under them. Bases Freeze Panes paints them with the background colors of your theme, for normal rows, the header, the row under the pointer and the summary rows.
+Frozen cells must cover the cells that slide under them. The plugin uses theme background colors. It colors the header, normal rows, the row under the pointer and summary rows.
 
 ### Choices for one file
 
@@ -71,11 +79,11 @@ Each choice moves with its file or folder when you rename or move it, and goes a
 
 ## Install
 
-When Bases Freeze Panes is listed in the community directory, open Settings, then Community plugins, then Browse, and search for "Bases Freeze Panes". Select Install, then Enable.
+Open Settings, Community plugins, then Browse. Search for "Bases Freeze Panes". Select Install, then Enable.
 
 To install by hand, download `main.js`, `manifest.json` and `styles.css` from the latest release. Put the three files in `<vault>/.obsidian/plugins/bases-freeze-panes/`. Reload the list of community plugins, then turn on Bases Freeze Panes.
 
-Bases Freeze Panes needs Obsidian 1.13.4 or newer and the Bases core plugin. It was tested on desktop with Obsidian 1.13.4 and 1.14.4.
+Bases Freeze Panes needs Obsidian 1.13.4 or newer and the Bases core plugin. The app checks for this update use desktop Obsidian 1.14.4.
 
 ## Usage
 
@@ -88,13 +96,7 @@ Bases Freeze Panes needs Obsidian 1.13.4 or newer and the Bases core plugin. It 
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/pro-settings.png" alt="The Pro section of the settings after sign in, with the GitHub account and the Pro status" width="720">
 
-To get Pro:
-
-1. Sponsor [theluckystrike on GitHub Sponsors](https://github.com/sponsors/theluckystrike) with $5 a month, or $15 once. A total payment of $15 meets the payment requirement for Pro without further payment. Sign-in and the checks below still apply.
-2. In Obsidian, open the settings of Bases Freeze Panes and select "Sign in with GitHub".
-3. The plugin copies a code and opens github.com/login/device. Paste the code there and approve.
-
-The status line then shows your GitHub login and the tier. If you sponsor after you sign in, select Refresh. A negative sponsorship answer turns Pro off. Your choices stay saved and come back when Pro is on again.
+Sponsor on [GitHub Sponsors](https://github.com/sponsors/theluckystrike). Open the plugin settings and select "Sign in with GitHub". Read the account and offline limits below. Saved choices return when Pro is on again.
 
 ## Settings
 
@@ -107,9 +109,10 @@ The status line then shows your GitHub login and the tier. If you sponsor after 
 | Freeze Markdown and Dataview tables | Off | On or off (free) |
 | Frozen columns | 1 | 0 to 3 (2 and 3 need Pro) |
 | Freeze the last column | Off | On or off (Pro) |
+| Pin a property | Empty | A visible property name (Pro) |
 | Embedded table height | 500 | 200 to 1200 pixels, in steps of 50 |
 
-"Choices for single files" lists every file with its own choice; delete an entry to remove it. If a saved value is out of range, the plugin moves it to the nearest allowed value.
+"Choices for single files" lists files with their own choice; delete an entry to remove it. If a saved value is out of range, the plugin moves it to the nearest allowed value.
 
 ## FAQ
 
@@ -147,7 +150,7 @@ After a successful check, Pro can work offline for up to 14 days. Sign out or a 
 
 ## Support
 
-Report bugs and feature requests in this repository's issue tracker. Please include your Obsidian version, your theme, and the view settings of the base that shows the problem.
+Report bugs and feature requests in this repository's issue tracker. Include your Obsidian version, your theme, and the view settings of the base that shows the problem.
 
 To build from source:
 
@@ -157,7 +160,7 @@ npm run build
 npm test
 ```
 
-The tests check golden cases for the column layout and the GitHub Sponsors rules. An end-to-end test scrolls real tables in Obsidian and checks that the header and the first column stay in place.
+Tests check the column layout, sponsorship rules and real table scrolling.
 
 ## License
 

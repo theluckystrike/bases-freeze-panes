@@ -6,7 +6,7 @@
 // core method (fail closed): if a future version changes the table, the header part keeps working
 // and the columns are simply not frozen.
 import type { App } from 'obsidian';
-import { MAX_FROZEN, planRow, type RowPlan } from './layout';
+import { planRow, type RowPlan } from './layout';
 
 export const FROZEN_CLASS = 'bfp-frozen';
 export const LAST_CLASS = 'bfp-last';
@@ -20,7 +20,7 @@ interface CellLike {
 interface RowLike {
 	cells: CellLike[];
 	el: HTMLElement;
-	view?: { scrollEl?: unknown };
+	view?: { scrollEl?: unknown; config?: { getOrder?: () => unknown } };
 }
 type Virtualize = (this: RowLike, widths: number[], left: number, right: number) => void;
 interface RowProto {
@@ -31,6 +31,8 @@ interface RowProto {
 export type ColumnsFor = (el: HTMLElement) => number;
 /** Returns true when the last column of the table whose scroll box is el is pinned to the end edge. */
 export type PinLastFor = (el: HTMLElement) => boolean;
+/** A visible property to pin next to the leading columns (Pro), or null. */
+export type PinPropertyFor = (el: HTMLElement) => string | null;
 
 export interface ColumnPatch {
 	remove(): void;
@@ -123,7 +125,7 @@ function clearEnd(row: RowLike): void {
 
 function clearMarks(row: RowLike): void {
 	row.el.removeClass(ROW_CLASS);
-	for (let i = 0; i < Math.min(MAX_FROZEN, row.cells.length); i++) row.cells[i]?.el.removeClass(FROZEN_CLASS, LAST_CLASS);
+	for (const cell of row.cells) cell.el.removeClass(FROZEN_CLASS, LAST_CLASS);
 	clearEnd(row);
 }
 
@@ -139,6 +141,8 @@ function scopeOf(row: RowLike): HTMLElement {
  */
 function applyPlan(row: RowLike, plan: RowPlan): void {
 	const keep: HTMLElement[] = [];
+	const frozen = new Set(plan.cells.filter((cell) => cell.frozen).map((cell) => cell.index));
+	const lastFrozen = plan.cells.filter((cell) => cell.frozen).pop()?.index;
 	let frozenWidth = 0;
 	clearEnd(row);
 	for (const cell of plan.cells) {
@@ -155,16 +159,16 @@ function applyPlan(row: RowLike, plan: RowPlan): void {
 		// The pinned last cell must not keep a start offset: with both offsets set, sticky honors the start one.
 		el.setCssStyles({ insetInlineStart: cell.index === plan.end ? 'auto' : `${cell.start}px`, width: `${cell.width}px` });
 		el.toggleClass(FROZEN_CLASS, cell.frozen);
-		el.toggleClass(LAST_CLASS, cell.frozen && cell.index === plan.frozen - 1);
+		el.toggleClass(LAST_CLASS, cell.frozen && cell.index === lastFrozen);
 		keep.push(el);
 	}
-	for (let i = plan.frozen; i < Math.min(MAX_FROZEN, row.cells.length); i++) row.cells[i]?.el.removeClass(FROZEN_CLASS, LAST_CLASS);
+	for (let i = 0; i < row.cells.length; i++) if (!frozen.has(i)) row.cells[i]?.el.removeClass(FROZEN_CLASS, LAST_CLASS);
 	row.el.addClass(ROW_CLASS);
 	row.el.setChildrenInPlace(keep);
 }
 
 /** Wraps the row method. Returns null (and changes nothing) when the table is not the expected shape. */
-export function installColumnPatch(app: App, columnsFor: ColumnsFor, pinLastFor: PinLastFor = () => false): ColumnPatch | null {
+export function installColumnPatch(app: App, columnsFor: ColumnsFor, pinLastFor: PinLastFor = () => false, pinPropertyFor: PinPropertyFor = () => null): ColumnPatch | null {
 	const proto = findRowPrototype(app);
 	if (!proto) return null;
 	const original = proto.virtualize;
@@ -177,7 +181,18 @@ export function installColumnPatch(app: App, columnsFor: ColumnsFor, pinLastFor:
 		const scope = scopeOf(this);
 		const count = columnsFor(scope);
 		const pinLast = pinLastFor(scope);
-		const plan = (count > 0 || pinLast) && widths.length >= this.cells.length ? planRow(widths, count, left, right, pinLast) : null;
+		const property = pinPropertyFor(scope);
+		let pinIndex: number | null = null;
+		if (property && typeof this.view?.config?.getOrder === 'function') {
+			try {
+				const order = this.view.config.getOrder();
+				const index = Array.isArray(order) ? order.indexOf(property) : -1;
+				if (index >= 0 && index < this.cells.length) pinIndex = index;
+			} catch {
+				// A changed core table can still use its leading-column setting.
+			}
+		}
+		const plan = (count > 0 || pinLast || pinIndex !== null) && widths.length >= this.cells.length ? planRow(widths, count, left, right, pinLast, pinIndex) : null;
 		if (!plan || (plan.frozen === 0 && plan.end === null)) {
 			clearMarks(this);
 			original.call(this, widths, left, right);

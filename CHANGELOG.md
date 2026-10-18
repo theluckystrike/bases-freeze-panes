@@ -1,5 +1,11 @@
 # bases-freeze-panes
 
+## 1.3.0
+
+### Minor Changes
+
+- 8627569: Add a Pro option to pin a chosen visible property beside the leading frozen columns. Keep the existing free pane controls.
+
 ## 1.2.2
 
 ### Patch Changes

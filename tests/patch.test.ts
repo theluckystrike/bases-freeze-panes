@@ -135,3 +135,34 @@ describe('installColumnPatch', () => {
 		expect(installColumnPatch(app as never, () => 1)).toBeNull();
 	});
 });
+
+describe('property column patch', () => {
+	it('finds the property in the current column order and removes its marks when the choice changes', () => {
+		const { app, row } = fakeApp();
+		let property: string | null = 'note.score';
+		const patch = installColumnPatch(app as never, () => 1, () => false, () => property);
+		const r = row();
+		Object.assign(r, { view: { config: { getOrder: () => ['file.name', 'note.other', 'note.score', 'note.date'] } } });
+		r.virtualize(widths, 350, 400);
+		expect(r.cells[2]!.el.hasClass(FROZEN_CLASS)).toBe(true);
+		expect(r.cells[2]!.el.hasClass(LAST_CLASS)).toBe(true);
+		expect(r.cells[2]!.el.style.insetInlineStart).toBe('100px');
+		property = null;
+		r.virtualize(widths, 350, 400);
+		expect(r.cells[2]!.el.hasClass(FROZEN_CLASS)).toBe(false);
+		expect(r.cells[2]!.el.hasClass(LAST_CLASS)).toBe(false);
+		expect(r.el.contains(r.cells[2]!.el)).toBe(false);
+		patch?.remove();
+	});
+	it('does not pin the wrong cell when the property is hidden or the order API changes', () => {
+		const { app, row } = fakeApp();
+		const patch = installColumnPatch(app as never, () => 1, () => false, () => 'note.missing');
+		const r = row();
+		Object.assign(r, { view: { config: { getOrder: () => ['file.name', 'note.other'] } } });
+		r.virtualize(widths, 350, 400);
+		expect(r.cells.filter((c) => c.el.hasClass(FROZEN_CLASS))).toHaveLength(1);
+		Object.assign(r, { view: { config: { getOrder: () => { throw new Error('changed'); } } } });
+		expect(() => r.virtualize(widths, 350, 400)).not.toThrow();
+		patch?.remove();
+	});
+});

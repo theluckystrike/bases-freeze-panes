@@ -16,6 +16,8 @@ export interface FreezeSettings {
 	columns: number;
 	/** Pro: pin the last column to the end edge. */
 	freezeLast: boolean;
+	/** Pro: pin this visible property next to the leading columns. */
+	pinProperty: string;
 	embedHeight: number;
 	files: Record<string, FileChoice>;
 }
@@ -32,6 +34,7 @@ export const DEFAULT_SETTINGS: FreezeSettings = {
 	freezeNoteTables: false,
 	columns: 1,
 	freezeLast: false,
+	pinProperty: '',
 	embedHeight: 500,
 	files: {},
 };
@@ -86,6 +89,7 @@ export function normalizeSettings(saved: unknown): FreezeSettings {
 		freezeHeader: typeof s.freezeHeader === 'boolean' ? s.freezeHeader : DEFAULT_SETTINGS.freezeHeader,
 		columns: clampColumns(s.columns, DEFAULT_SETTINGS.columns),
 		freezeLast: typeof s.freezeLast === 'boolean' ? s.freezeLast : DEFAULT_SETTINGS.freezeLast,
+		pinProperty: typeof s.pinProperty === 'string' ? s.pinProperty.trim() : '',
 		embedHeight: Math.min(EMBED_HEIGHT_MAX, Math.max(EMBED_HEIGHT_MIN, height)),
 		files,
 	};

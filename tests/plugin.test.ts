@@ -108,3 +108,35 @@ describe('BasesFreezePanesPlugin', () => {
 		expect(open.getAttribute('data-bfp-columns')).toBe('1');
 	});
 });
+
+describe('property pin rights and scope', () => {
+	it('keeps the choice but does not pin a property without Pro', async () => {
+		const p = makePlugin();
+		await p.loadSettings();
+		p.settings.pinProperty = 'score';
+		expect(p.pinPropertyFor(createDiv())).toBeNull();
+		expect(p.settings.pinProperty).toBe('score');
+	});
+	it('honors the main switch and the file switch, also with 0 leading columns and no header', async () => {
+		const p = makePlugin();
+		await p.loadSettings();
+		vi.spyOn(p, 'isPro').mockReturnValue(true);
+		p.settings.pinProperty = 'score';
+		p.settings.columns = 0;
+		p.settings.freezeHeader = false;
+		const root = createDiv();
+		const file = p.app.vault.getAbstractFileByPath('notes/a.md');
+		vi.spyOn(p.app.workspace, 'iterateAllLeaves').mockImplementation((fn) => fn({ view: { containerEl: root, file } } as never));
+		p.refresh();
+		expect(p.pinPropertyFor(root)).toBe('note.score');
+		p.settings.files = { 'notes/a.md': { off: true } };
+		p.refresh();
+		expect(p.pinPropertyFor(root)).toBeNull();
+		p.settings.files = {};
+		p.settings.enabled = false;
+		p.refresh();
+		expect(p.pinPropertyFor(root)).toBeNull();
+		p.onunload();
+		expect(root.hasAttribute('data-bfp-property')).toBe(false);
+	});
+});

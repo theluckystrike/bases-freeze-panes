@@ -78,6 +78,7 @@ export default class BasesFreezePanesPlugin extends Plugin {
 				this.app,
 				(el) => this.columnsFor(el),
 				(el) => this.pinLastFor(el),
+				(el) => this.pinPropertyFor(el),
 			);
 			this.columnsSupported = this.patch !== null;
 			this.refresh();
@@ -157,6 +158,15 @@ export default class BasesFreezePanesPlugin extends Plugin {
 		return effectiveFor(this.settings, null, this.isPro()).last;
 	}
 
+	/** A chosen property stays visible even when it is not a leading column. */
+	pinPropertyFor(el: HTMLElement): string | null {
+		const scope = el.closest(`[${SCOPE_ATTR}]`);
+		if (!this.settings.enabled || !this.isPro()) return null;
+		const property = scope ? scope.getAttribute('data-bfp-property') ?? '' : this.settings.pinProperty;
+		if (!property) return null;
+		return /^(note|file|formula)\./.test(property) ? property : `note.${property}`;
+	}
+
 	/** Removes one file's choice (the list in the settings). */
 	async forgetFileChoice(path: string): Promise<void> {
 		const files = { ...this.settings.files };
@@ -194,10 +204,11 @@ export default class BasesFreezePanesPlugin extends Plugin {
 		const path = file instanceof TFile ? file.path : null;
 		const eff = effectiveFor(this.settings, path, this.isPro());
 		const columns = this.columnsSupported ? eff.columns : 0;
-		const state = () => `${el.getAttribute(SCOPE_ATTR)}|${el.getAttribute(LAST_ATTR)}|${String(el.hasClass(HEADER_CLASS))}|${el.style.getPropertyValue(HEIGHT_PROP)}`;
+		const state = () => `${el.getAttribute(SCOPE_ATTR)}|${el.getAttribute(LAST_ATTR)}|${String(el.hasClass(HEADER_CLASS))}|${el.style.getPropertyValue(HEIGHT_PROP)}|${el.getAttribute('data-bfp-property')}`;
 		const before = state();
 		el.setAttribute(SCOPE_ATTR, String(columns));
 		el.setAttribute(LAST_ATTR, String(this.columnsSupported && eff.last));
+		el.setAttribute('data-bfp-property', this.isPro() && this.settings.enabled && !this.settings.files[path ?? '']?.off ? this.settings.pinProperty : '');
 		el.toggleClass(HEADER_CLASS, eff.header);
 		el.setCssProps({ [HEIGHT_PROP]: `${this.settings.embedHeight}px` });
 		this.marked.add(el);
@@ -207,6 +218,7 @@ export default class BasesFreezePanesPlugin extends Plugin {
 	private unmark(el: HTMLElement): void {
 		el.removeAttribute(SCOPE_ATTR);
 		el.removeAttribute(LAST_ATTR);
+		el.removeAttribute('data-bfp-property');
 		el.removeClass(HEADER_CLASS);
 		el.style.removeProperty(HEIGHT_PROP);
 	}

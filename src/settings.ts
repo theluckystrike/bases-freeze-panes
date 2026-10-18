@@ -54,6 +54,11 @@ export class BasesFreezePanesSettingTab extends PluginSettingTab {
 				control: { type: 'toggle', key: 'freezeLast', defaultValue: DEFAULT_SETTINGS.freezeLast },
 			},
 			{
+				name: 'Pin a property',
+				desc: 'Pro. Type a property name such as status, note.status or formula.total. If the property is visible in a Bases table, it stays next to the frozen columns. Empty turns this off.',
+				control: { type: 'text', key: 'pinProperty', defaultValue: DEFAULT_SETTINGS.pinProperty },
+			},
+			{
 				name: 'Embedded table height',
 				desc: `Largest height in pixels of a table embedded in a note, from ${EMBED_HEIGHT_MIN} to ${EMBED_HEIGHT_MAX}. Taller tables scroll inside this box. Tables in base files use the whole tab.`,
 				control: { type: 'slider', key: 'embedHeight', defaultValue: DEFAULT_SETTINGS.embedHeight, min: EMBED_HEIGHT_MIN, max: EMBED_HEIGHT_MAX, step: 50 },
