@@ -2,13 +2,13 @@
 
 Bases Freeze Panes keeps the header and first column of a Bases table in view while you scroll, like a spreadsheet.
 
-It supports base files, note embeds and base code blocks.
-
-The header row and one frozen column are free. Pro adds 2 or 3 frozen columns, a column count for single files, a pinned last column, and a chosen property pin. Pro costs $5 a month, or $15 once, through GitHub Sponsors. A total payment of $15 meets the payment requirement for Pro without further payment. Sign-in and the checks below still apply.
+It supports base files, note embeds and base code blocks. The header and first column are free. Pro adds 2 or 3 frozen columns, a column count for single files, a pinned last column, and a property pin. A total payment of $15 meets the payment requirement for Pro without further payment. Sign-in and the checks below still apply.
 
 ## Features
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/bases-freeze-panes.gif" alt="Scrolling a wide base down and to the right while the header row and the file name column stay put" width="720">
+
+Free: a fixed header and first column. Pro: more frozen columns, a pinned last column, property pin. $15 one time or $5 a month: [Sponsor](https://github.com/sponsors/theluckystrike?metadata_source=bases-freeze-panes) or [$15 one-time offer](https://github.com/sponsors/theluckystrike/sponsorships?tier_id=666162&metadata_source=bases-freeze-panes).
 
 ### Frozen header and first column in base files
 
@@ -96,7 +96,7 @@ Bases Freeze Panes needs Obsidian 1.13.4 or newer and the Bases core plugin. The
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/pro-settings.png" alt="The Pro section of the settings after sign in, with the GitHub account and the Pro status" width="720">
 
-Sponsor on [GitHub Sponsors](https://github.com/sponsors/theluckystrike). Open the plugin settings and select "Sign in with GitHub". Read the account and offline limits below. Saved choices return when Pro is on again.
+Sponsor through the links above, then select "Sign in with GitHub" in settings. Saved choices return when Pro is on again. Read the account and offline limits below.
 
 ## Settings
 
@@ -118,7 +118,7 @@ Sponsor on [GitHub Sponsors](https://github.com/sponsors/theluckystrike). Open t
 
 ### Why did my CSS snippet for the first column not work?
 
-The core table draws only the cells that are in view, to stay fast with large bases. After you scroll right, the cells of the first column no longer exist on the page. The plugin tells the table to keep the frozen cells, and then pins them.
+The core table draws only visible cells to stay fast on large bases. After you scroll right, the first-column cells leave the page. The plugin keeps and pins them.
 
 ### Does it change my base files or notes?
 
@@ -149,6 +149,8 @@ After sign in, Bases Freeze Panes sends one query to `https://api.github.com/gra
 After a successful check, Pro can work offline for up to 14 days. Sign out or a negative sponsorship answer turns Pro off. The plugin stores the GitHub token through the secret storage API of Obsidian. It does not put the token in its saved settings or its local sponsorship data. The local storage of this device keeps your GitHub login, the tier and the time of the last check. Sign out clears the token. You can also revoke the access in your GitHub settings, under Applications.
 
 ## Support
+
+Plugin page: [bases-freeze-panes](https://notemods.com/plugins/bases-freeze-panes/).
 
 Report bugs and feature requests in this repository's issue tracker. Include your Obsidian version, your theme, and the view settings of the base that shows the problem.
 

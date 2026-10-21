@@ -1,5 +1,11 @@
 # bases-freeze-panes
 
+## 1.3.1
+
+### Patch Changes
+
+- 2ebc204: Add storefront links for the free and Pro offers.
+
 ## 1.3.0
 
 ### Minor Changes
