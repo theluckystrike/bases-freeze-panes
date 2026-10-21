@@ -7,6 +7,8 @@ import { END_CLASS, FROZEN_CLASS, LAST_CLASS, ROW_CLASS, installColumnPatch, typ
 import { SPONSORS } from './pro';
 import { DEFAULT_SETTINGS, effectiveFor, normalizeSettings, removeFile, renameFile, withFileChoice, type FreezeSettings } from './scope';
 import { BasesFreezePanesSettingTab } from './settings';
+import { setupHello } from './hello/index';
+import WHATS_NEW from './whats-new.json';
 
 const SCOPE_ATTR = 'data-bfp-columns';
 const LAST_ATTR = 'data-bfp-last';
@@ -29,6 +31,8 @@ export default class BasesFreezePanesPlugin extends Plugin {
 	private noteTables = new NoteTables();
 
 	async onload(): Promise<void> {
+		// First: "What's new" reads its state before the settings load (packages/hello). It does not wait.
+		setupHello(this, WHATS_NEW);
 		await this.loadSettings();
 		// No request here: a request needs a GitHub sign in first (Settings, Pro, Sign in with GitHub).
 		const pro = createGitHubSponsors(this.app, this.manifest.id, SPONSORS, this);

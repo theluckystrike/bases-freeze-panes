@@ -8,13 +8,13 @@ It supports base files, note embeds and base code blocks. The header and first c
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/bases-freeze-panes.gif" alt="Scrolling a wide base down and to the right while the header row and the file name column stay put" width="720">
 
-Free: a fixed header and first column. Pro: more frozen columns, a pinned last column, property pin. $15 one time or $5 a month: [Sponsor](https://github.com/sponsors/theluckystrike?metadata_source=bases-freeze-panes) or [$15 one-time offer](https://github.com/sponsors/theluckystrike/sponsorships?tier_id=666162&metadata_source=bases-freeze-panes).
+Pro costs $15 one time or $5 a month: [Sponsor](https://github.com/sponsors/theluckystrike?metadata_source=bases-freeze-panes) or [$15 one-time offer](https://github.com/sponsors/theluckystrike/sponsorships?tier_id=666162&metadata_source=bases-freeze-panes).
 
 ### Frozen header and first column in base files
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/base-file.png" alt="A base file scrolled down and to the right with the header row and the file name column in place" width="720">
 
-Open a base file with more columns than fit on the screen. Scroll to the right and the first column stays where it was. The other columns slide under it, and a thin line marks its edge.
+In a base wider than the screen, the first column stays in place when you scroll right. The other columns slide under it, and a thin line marks its edge.
 
 The plugin keeps frozen cells on the page and pins them. The header has a solid background.
 
@@ -22,7 +22,7 @@ The plugin keeps frozen cells on the page and pins them. The header has a solid 
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/embedded-base.png" alt="A base embedded in a note scrolls inside its own box, and its header row sticks at the top" width="720">
 
-A base embedded in a note normally grows to the full height of its rows. Its header then scrolls away with the note.
+An embedded base normally grows to the full height of its rows, so its header scrolls away with the note.
 
 Bases Freeze Panes gives embedded tables a maximum height, 500 pixels by default. A taller table scrolls inside this box, so its header row sticks to the top. Short tables keep their normal height.
 
@@ -38,7 +38,7 @@ The main switch and the file switch also apply. Turn off "Freeze the header row"
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/two-columns.png" alt="Two frozen columns keep the title and the author in view" width="720">
 
-With Pro you can freeze 2 or 3 columns, for example the file name and the author of a book. Each frozen column keeps its own width and place. To choose which columns come first, change the column order in the base.
+With Pro you can freeze 2 or 3 columns, for example the file name and the author of a book. Each frozen column keeps its own width and place. Change the column order in the base to choose which come first.
 
 ### Pinned last column (Pro)
 
@@ -48,7 +48,7 @@ Turn on "Freeze the last column" to keep it at the right edge. The middle column
 
 ### Pin a property (Pro)
 
-Type a property name in "Pin a property", for example `author`, `note.author` or `formula.total`. When that property is visible in a Bases table, it stays beside the leading frozen columns. It can be a middle column. You do not need to move it to the start of the column order. A hidden property stays hidden.
+Type a property name in "Pin a property", for example `author`, `note.author` or `formula.total`. When that property is visible in a Bases table, it stays beside the leading frozen columns. It can be a middle column; you do not need to move it to the start. A hidden property stays hidden.
 
 Clear the field to remove this pin. The main switch and the file switch apply. If the property is also the last column, the property pin uses the left edge. This setting does not change rendered Markdown or Dataview tables.
 
@@ -58,13 +58,13 @@ Clear the field to remove this pin. The main switch and the file switch apply. I
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/reading-view.png" alt="A base code block in reading view with the header row and the first column frozen" width="720">
 
-Freezing works wherever a table view of a base shows up in a note: embedded base files, base code blocks, live preview and reading view.
+Freezing works for every table view of a base in a note: embedded base files, base code blocks, live preview and reading view.
 
 ### Solid cells in light and dark themes
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/light-theme.png" alt="The frozen cells stay solid in the light theme" width="720">
 
-Frozen cells must cover the cells that slide under them. The plugin uses theme background colors. It colors the header, normal rows, the row under the pointer and summary rows.
+Frozen cells use theme background colors, so the cells that slide under them stay hidden. This applies to the header, normal rows, the row under the pointer and summary rows.
 
 ### Choices for one file
 
@@ -81,24 +81,26 @@ Each choice moves with its file or folder when you rename or move it, and goes a
 
 Open Settings, Community plugins, then Browse. Search for "Bases Freeze Panes". Select Install, then Enable.
 
-To install by hand, download `main.js`, `manifest.json` and `styles.css` from the latest release. Put the three files in `<vault>/.obsidian/plugins/bases-freeze-panes/`. Reload the list of community plugins, then turn on Bases Freeze Panes.
+To install by hand, download `main.js`, `manifest.json` and `styles.css` from the latest release. Put them in `<vault>/.obsidian/plugins/bases-freeze-panes/`. Reload the community plugins, then turn on Bases Freeze Panes.
 
-Bases Freeze Panes needs Obsidian 1.13.4 or newer and the Bases core plugin. The app checks for this update use desktop Obsidian 1.14.4.
+Bases Freeze Panes needs Obsidian 1.13.4 or newer and the Bases core plugin. Tests for this update ran on desktop Obsidian 1.14.4.
 
 ## Usage
 
 1. Turn on the plugin. Bases tables now have a frozen header and first column.
 2. Open a wide base and scroll down and to the right.
-3. To compare with the normal table, run "Turn frozen panes on or off". Run it again to turn freezing back on.
+3. To compare with the normal table, run "Turn frozen panes on or off". Run it again to undo.
 4. For Pro, sponsor on GitHub, then open the settings and select "Sign in with GitHub".
 
 ## Pro
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/pro-settings.png" alt="The Pro section of the settings after sign in, with the GitHub account and the Pro status" width="720">
 
-Sponsor through the links above, then select "Sign in with GitHub" in settings. Saved choices return when Pro is on again. Read the account and offline limits below.
+Sponsor through the links above, then select "Sign in with GitHub" in settings. Saved choices return when Pro is on again.
 
 ## Settings
+
+After a minor or major update, this plugin opens one What's new tab in the background. The tab and settings card suggest other NoteMods plugins and Zovo Chat and link to notemods.com for feedback ([privacy](https://notemods.com/privacy/)). The tab sends no data. Turn the tab off in Settings.
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/settings.png" alt="Settings with the Pro section, the main switch, the header row, the number of frozen columns and the height of embedded tables" width="720">
 
@@ -152,7 +154,7 @@ After a successful check, Pro can work offline for up to 14 days. Sign out or a 
 
 Plugin page: [bases-freeze-panes](https://notemods.com/plugins/bases-freeze-panes/).
 
-Report bugs and feature requests in this repository's issue tracker. Include your Obsidian version, your theme, and the view settings of the base that shows the problem.
+Report bugs and feature requests in this repository's issue tracker. Include your Obsidian version, theme and the view settings of the base.
 
 To build from source:
 
@@ -161,8 +163,6 @@ npm ci
 npm run build
 npm test
 ```
-
-Tests check the column layout, sponsorship rules and real table scrolling.
 
 ## License
 

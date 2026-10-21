@@ -4,6 +4,7 @@ import { MAX_FROZEN } from './layout';
 import { PRO_UI } from './pro';
 import { DEFAULT_SETTINGS, EMBED_HEIGHT_MAX, EMBED_HEIGHT_MIN, FREE_COLUMNS, normalizeSettings, type FileChoice } from './scope';
 import type BasesFreezePanesPlugin from './main';
+import { helloSettingItems } from './hello/settings';
 
 /** One line for a file's choice in the list of single-file choices. */
 export function describeChoice(choice: FileChoice, pro: boolean): string {
@@ -22,6 +23,11 @@ export class BasesFreezePanesSettingTab extends PluginSettingTab {
 	}
 
 	getSettingDefinitions(): SettingDefinitionItem[] {
+		// The product rows, then the "More from NoteMods" card (packages/hello).
+		return [...this.productSettingDefinitions(), ...helloSettingItems()];
+	}
+
+	productSettingDefinitions(): SettingDefinitionItem[] {
 		const fileCount = () => Object.keys(this.plugin.settings.files).length;
 		const pro = () => this.plugin.isPro();
 		const paths = Object.keys(this.plugin.settings.files).sort();

@@ -1,5 +1,11 @@
 # bases-freeze-panes
 
+## 1.4.0
+
+### Minor Changes
+
+- After a minor or major update, Bases Freeze Panes opens one What's new tab in the background. It links to notemods.com, where you can send feedback. Turn it off in Settings. Add the Send feedback command. The plugin makes no new network requests.
+
 ## 1.3.1
 
 ### Patch Changes
