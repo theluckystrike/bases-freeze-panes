@@ -1,16 +1,20 @@
 /* Bases Freeze Panes. Every rule depends on a class that the plugin adds, so with the plugin
    off or unloaded the app's own table styles apply unchanged. */
 
-/* Header row: solid background, so rows that scroll under it never show through. */
-.bfp-header .bases-thead {
+/* Header row: solid background, so rows that scroll under it never show through.
+   A view with its own header choice has bfp-view-header or bfp-no-header, which wins over the tab. */
+.bases-view.bfp-view-header .bases-thead,
+.bfp-header .bases-view:not(.bfp-no-header) .bases-thead {
 	background-color: var(--background-primary);
 	background-image: linear-gradient(var(--bases-table-header-background), var(--bases-table-header-background));
 }
 
 /* Embedded bases: a table in a note grows to full height, so the note scrolls and the sticky
    header of the table never sticks. A height cap gives the table its own scroll box. */
-.workspace-leaf-content[data-type="markdown"].bfp-header .bases-embed .bases-view[data-view-type="table"],
-.workspace-leaf-content[data-type="markdown"].bfp-header .block-language-base .bases-view[data-view-type="table"] {
+.workspace-leaf-content[data-type="markdown"].bfp-header .bases-embed .bases-view[data-view-type="table"]:not(.bfp-no-header),
+.workspace-leaf-content[data-type="markdown"].bfp-header .block-language-base .bases-view[data-view-type="table"]:not(.bfp-no-header),
+.workspace-leaf-content[data-type="markdown"] .bases-embed .bases-view.bfp-view-header[data-view-type="table"],
+.workspace-leaf-content[data-type="markdown"] .block-language-base .bases-view.bfp-view-header[data-view-type="table"] {
 	max-height: var(--bfp-embed-height, 500px);
 }
 

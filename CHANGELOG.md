@@ -1,5 +1,11 @@
 # bases-freeze-panes
 
+## 1.5.0
+
+### Minor Changes
+
+- Add the "Set frozen panes for the current view" command, so each view of a base can turn frozen panes off, keep its own header choice and, with Pro, set its own frozen columns.
+
 ## 1.4.0
 
 ### Minor Changes

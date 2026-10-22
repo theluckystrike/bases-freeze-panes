@@ -3,7 +3,8 @@ import vectors from './vectors/bases-freeze-panes.json';
 import { clampColumns, planRow } from '../src/layout';
 
 describe('golden vectors (packages/spec/vectors/bases-freeze-panes.json)', () => {
-	for (const c of vectors.cases) {
+	// Cases with "function": "effectiveFor" run in scope.test.ts. All planRow cases stay unchanged.
+	for (const c of vectors.cases.filter((v) => !('function' in v))) {
 		it(c.name, () => {
 			const [widths, frozen, left, right, pinLast] = c.args as [number[], number, number, number, boolean?];
 			expect(planRow(widths, frozen, left, right, pinLast)).toEqual(c.expected);

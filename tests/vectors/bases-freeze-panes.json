@@ -2,7 +2,7 @@
  "slug": "bases-freeze-panes",
  "module": "bases-freeze-panes/src/layout",
  "function": "planRow",
- "note": "planRow args = [column widths in px, frozen columns, visible left edge, visible right edge, pinLast?] in table coordinates; expected = {frozen, end, cells:[{index,start,width,frozen}]} with frozen columns first, every column in view, and with pinLast the last column (end = its index, null when not pinned or when it is already frozen), or null for unusable widths.",
+ "note": "planRow args = [column widths in px, frozen columns, visible left edge, visible right edge, pinLast?] in table coordinates; expected = {frozen, end, cells:[{index,start,width,frozen}]} with frozen columns first, every column in view, and with pinLast the last column (end = its index, null when not pinned or when it is already frozen), or null for unusable widths. Cases with function effectiveFor (module bases-freeze-panes/src/scope) take [settings, file path, pro, view name or null] and give {header, columns, last}.",
  "cases": [
   {
    "name": "one frozen column after scrolling right keeps the file name column",
@@ -616,6 +616,275 @@
       "frozen": false
      }
     ]
+   }
+  },
+  {
+   "name": "view choice 1: Pro, global 1, no file choice, view Wide 3 columns gives 3 for Wide",
+   "function": "effectiveFor",
+   "module": "bases-freeze-panes/src/scope",
+   "args": [
+    {
+     "enabled": true,
+     "freezeHeader": true,
+     "freezeNoteTables": false,
+     "columns": 1,
+     "freezeLast": false,
+     "pinProperty": "",
+     "embedHeight": 500,
+     "files": {
+      "Books.base": {
+       "views": {
+        "Wide": {
+         "columns": 3
+        }
+       }
+      }
+     }
+    },
+    "Books.base",
+    true,
+    "Wide"
+   ],
+   "expected": {
+    "header": true,
+    "columns": 3,
+    "last": false
+   }
+  },
+  {
+   "name": "view choice 1: Pro, the same settings give the global 1 column for another view",
+   "function": "effectiveFor",
+   "module": "bases-freeze-panes/src/scope",
+   "args": [
+    {
+     "enabled": true,
+     "freezeHeader": true,
+     "freezeNoteTables": false,
+     "columns": 1,
+     "freezeLast": false,
+     "pinProperty": "",
+     "embedHeight": 500,
+     "files": {
+      "Books.base": {
+       "views": {
+        "Wide": {
+         "columns": 3
+        }
+       }
+      }
+     }
+    },
+    "Books.base",
+    true,
+    "Narrow"
+   ],
+   "expected": {
+    "header": true,
+    "columns": 1,
+    "last": false
+   }
+  },
+  {
+   "name": "view choice 2: without Pro, view Wide 3 columns gives 1",
+   "function": "effectiveFor",
+   "module": "bases-freeze-panes/src/scope",
+   "args": [
+    {
+     "enabled": true,
+     "freezeHeader": true,
+     "freezeNoteTables": false,
+     "columns": 1,
+     "freezeLast": false,
+     "pinProperty": "",
+     "embedHeight": 500,
+     "files": {
+      "Books.base": {
+       "views": {
+        "Wide": {
+         "columns": 3
+        }
+       }
+      }
+     }
+    },
+    "Books.base",
+    false,
+    "Wide"
+   ],
+   "expected": {
+    "header": true,
+    "columns": 1,
+    "last": false
+   }
+  },
+  {
+   "name": "view choice 3: view Embed header off gives no header for Embed",
+   "function": "effectiveFor",
+   "module": "bases-freeze-panes/src/scope",
+   "args": [
+    {
+     "enabled": true,
+     "freezeHeader": true,
+     "freezeNoteTables": false,
+     "columns": 1,
+     "freezeLast": false,
+     "pinProperty": "",
+     "embedHeight": 500,
+     "files": {
+      "Books.base": {
+       "views": {
+        "Embed": {
+         "header": false
+        }
+       }
+      }
+     }
+    },
+    "Books.base",
+    false,
+    "Embed"
+   ],
+   "expected": {
+    "header": false,
+    "columns": 1,
+    "last": false
+   }
+  },
+  {
+   "name": "view choice 3: view Embed header off keeps the header for another view",
+   "function": "effectiveFor",
+   "module": "bases-freeze-panes/src/scope",
+   "args": [
+    {
+     "enabled": true,
+     "freezeHeader": true,
+     "freezeNoteTables": false,
+     "columns": 1,
+     "freezeLast": false,
+     "pinProperty": "",
+     "embedHeight": 500,
+     "files": {
+      "Books.base": {
+       "views": {
+        "Embed": {
+         "header": false
+        }
+       }
+      }
+     }
+    },
+    "Books.base",
+    false,
+    "Wide"
+   ],
+   "expected": {
+    "header": true,
+    "columns": 1,
+    "last": false
+   }
+  },
+  {
+   "name": "view choice 4: view off gives no header and 0 columns, also when the file has 2 columns",
+   "function": "effectiveFor",
+   "module": "bases-freeze-panes/src/scope",
+   "args": [
+    {
+     "enabled": true,
+     "freezeHeader": true,
+     "freezeNoteTables": false,
+     "columns": 1,
+     "freezeLast": false,
+     "pinProperty": "",
+     "embedHeight": 500,
+     "files": {
+      "Books.base": {
+       "columns": 2,
+       "views": {
+        "Wide": {
+         "off": true
+        }
+       }
+      }
+     }
+    },
+    "Books.base",
+    true,
+    "Wide"
+   ],
+   "expected": {
+    "header": false,
+    "columns": 0,
+    "last": false
+   }
+  },
+  {
+   "name": "view choice 5: file off wins over a view that is on",
+   "function": "effectiveFor",
+   "module": "bases-freeze-panes/src/scope",
+   "args": [
+    {
+     "enabled": true,
+     "freezeHeader": true,
+     "freezeNoteTables": false,
+     "columns": 1,
+     "freezeLast": false,
+     "pinProperty": "",
+     "embedHeight": 500,
+     "files": {
+      "Books.base": {
+       "off": true,
+       "views": {
+        "Wide": {
+         "header": true,
+         "columns": 3
+        }
+       }
+      }
+     }
+    },
+    "Books.base",
+    true,
+    "Wide"
+   ],
+   "expected": {
+    "header": false,
+    "columns": 0,
+    "last": false
+   }
+  },
+  {
+   "name": "view choice 6: a null view name gives the file result",
+   "function": "effectiveFor",
+   "module": "bases-freeze-panes/src/scope",
+   "args": [
+    {
+     "enabled": true,
+     "freezeHeader": true,
+     "freezeNoteTables": false,
+     "columns": 1,
+     "freezeLast": false,
+     "pinProperty": "",
+     "embedHeight": 500,
+     "files": {
+      "Books.base": {
+       "columns": 2,
+       "views": {
+        "Wide": {
+         "columns": 3,
+         "header": false
+        }
+       }
+      }
+     }
+    },
+    "Books.base",
+    true,
+    null
+   ],
+   "expected": {
+    "header": true,
+    "columns": 2,
+    "last": false
    }
   }
  ]

@@ -14,6 +14,6 @@ export const SPONSORS: SponsorsConfig = {
 };
 
 export const PRO_UI = {
-	proSummary: 'Pro freezes 2 or 3 columns, sets the frozen columns for single files, pins the last column to the right edge, and pins a chosen visible property.',
+	proSummary: 'Pro freezes 2 or 3 columns, sets the frozen columns for single files and views, pins the last column to the right edge, and pins a chosen visible property.',
 	priceText: 'Sponsor $5 a month, or $15 once. When you have paid $15 in total, Pro stays on.',
 };

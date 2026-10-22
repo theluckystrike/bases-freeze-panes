@@ -1,11 +1,11 @@
-import { Notice, Plugin, SuggestModal, TFile, type App, type WorkspaceLeaf } from 'obsidian';
+import { Modal, Notice, Plugin, Setting, SuggestModal, TFile, type App, type WorkspaceLeaf } from 'obsidian';
 import type { SponsorsManager } from './license/index';
 import { createGitHubSponsors, guardSponsorsPro } from './license/github-obsidian';
 import { MAX_FROZEN } from './layout';
 import { NoteTables, type NoteTableScope } from './note-tables';
 import { END_CLASS, FROZEN_CLASS, LAST_CLASS, ROW_CLASS, installColumnPatch, type ColumnPatch } from './patch';
 import { SPONSORS } from './pro';
-import { DEFAULT_SETTINGS, effectiveFor, normalizeSettings, removeFile, renameFile, withFileChoice, type FreezeSettings } from './scope';
+import { DEFAULT_SETTINGS, MAX_VIEWS, effectiveFor, fileChoiceOf, normalizeSettings, removeFile, renameFile, viewChoiceOf, withFileChoice, withoutFileLevel, withViewChoice, type FreezeSettings, type ViewChoice } from './scope';
 import { BasesFreezePanesSettingTab } from './settings';
 import { setupHello } from './hello/index';
 import WHATS_NEW from './whats-new.json';
@@ -16,6 +16,26 @@ const LAST_ATTR = 'data-bfp-last';
 const PRO_TICK_MS = 6 * 60 * 60 * 1000;
 const HEADER_CLASS = 'bfp-header';
 const HEIGHT_PROP = '--bfp-embed-height';
+/** The file path of a tab, so a table can find the choice of its view. */
+const PATH_ATTR = 'data-bfp-path';
+/** The core sets this attribute on each Bases view element (checked in 1.13.4 and 1.14.4). */
+const VIEW_NAME_ATTR = 'data-view-name';
+const VIEW_SELECTOR = '.bases-view';
+/** On a view element that has its own header choice. */
+export const VIEW_HEADER_CLASS = 'bfp-view-header';
+export const VIEW_NO_HEADER_CLASS = 'bfp-no-header';
+
+/** The name of the view that a Bases view element shows, or null when the app gives none. */
+export function viewNameOf(el: Element | null): string | null {
+	const name = el?.getAttribute(VIEW_NAME_ATTR);
+	return name ? name : null;
+}
+
+/** A view of an open file that the view command can change. */
+export interface ViewTarget {
+	file: TFile;
+	view: string;
+}
 
 /** Files whose tables the plugin can freeze: base files and notes that embed bases. */
 const isTableFile = (file: TFile | null): file is TFile => !!file && (file.extension === 'base' || file.extension === 'md');
@@ -29,6 +49,10 @@ export default class BasesFreezePanesPlugin extends Plugin {
 	private patch: ColumnPatch | null = null;
 	private marked = new Set<HTMLElement>();
 	private noteTables = new NoteTables();
+	/** The last state written on each Bases view element, so a refresh redraws only the views that changed. */
+	private viewStates = new WeakMap<HTMLElement, string>();
+	/** One observer for each tab: the core changes the view name attribute when the user switches views. */
+	private viewObservers = new Map<HTMLElement, MutationObserver>();
 
 	async onload(): Promise<void> {
 		// First: "What's new" reads its state before the settings load (packages/hello). It does not wait.
@@ -77,6 +101,17 @@ export default class BasesFreezePanesPlugin extends Plugin {
 			},
 		});
 
+		this.addCommand({
+			id: 'set-view',
+			name: 'Set frozen panes for the current view',
+			checkCallback: (checking) => {
+				const target = this.currentViewTarget();
+				if (!target) return false;
+				if (!checking) new ViewChoiceModal(this.app, this, target).open();
+				return true;
+			},
+		});
+
 		this.app.workspace.onLayoutReady(() => {
 			this.patch = installColumnPatch(
 				this.app,
@@ -113,6 +148,8 @@ export default class BasesFreezePanesPlugin extends Plugin {
 
 	onunload(): void {
 		this.noteTables.clear();
+		for (const observer of this.viewObservers.values()) observer.disconnect();
+		this.viewObservers.clear();
 		this.patch?.remove();
 		this.patch = null;
 		for (const el of this.marked) this.unmark(el);
@@ -121,6 +158,7 @@ export default class BasesFreezePanesPlugin extends Plugin {
 		for (const doc of this.documents()) {
 			doc.querySelectorAll<HTMLElement>(`.${END_CLASS}`).forEach((el) => el.style.removeProperty('margin-inline-start'));
 			doc.querySelectorAll(`.${FROZEN_CLASS}, .${LAST_CLASS}, .${ROW_CLASS}, .${END_CLASS}`).forEach((el) => el.removeClass(FROZEN_CLASS, LAST_CLASS, ROW_CLASS, END_CLASS));
+			doc.querySelectorAll(`.${VIEW_HEADER_CLASS}, .${VIEW_NO_HEADER_CLASS}`).forEach((el) => el.removeClass(VIEW_HEADER_CLASS, VIEW_NO_HEADER_CLASS));
 			this.rerender(doc.body);
 		}
 	}
@@ -148,8 +186,25 @@ export default class BasesFreezePanesPlugin extends Plugin {
 		await this.saveAndRefresh();
 	}
 
-	/** Frozen columns for the table inside el: the file of its tab, or the defaults for popovers. */
+	/**
+	 * The file and view of the table inside el, when that view has its own choice. Else null, and the
+	 * file choice applies. Without a view name the plugin does not guess.
+	 */
+	private viewScopeOf(el: HTMLElement): { path: string; view: string; viewEl: HTMLElement } | null {
+		const viewEl = el.closest<HTMLElement>(VIEW_SELECTOR);
+		const view = viewNameOf(viewEl);
+		const path = el.closest(`[${PATH_ATTR}]`)?.getAttribute(PATH_ATTR);
+		if (!viewEl || !view || !path) return null;
+		return viewChoiceOf(fileChoiceOf(this.settings, path), view) ? { path, view, viewEl } : null;
+	}
+
+	/** Frozen columns for the table inside el: its view, the file of its tab, or the defaults for popovers. */
 	columnsFor(el: HTMLElement): number {
+		const viewEl = el.closest<HTMLElement>(VIEW_SELECTOR);
+		// The table draws its rows here, so a view switch in the tab updates the header marks at once.
+		if (viewEl) this.markView(viewEl);
+		const view = this.viewScopeOf(el);
+		if (view) return effectiveFor(this.settings, view.path, this.isPro(), view.view).columns;
 		const scope = el.closest(`[${SCOPE_ATTR}]`);
 		if (scope) return Number(scope.getAttribute(SCOPE_ATTR)) || 0;
 		return effectiveFor(this.settings, null, this.isPro()).columns;
@@ -157,6 +212,8 @@ export default class BasesFreezePanesPlugin extends Plugin {
 
 	/** True when the last column of the table inside el is pinned to the end edge (Pro). */
 	pinLastFor(el: HTMLElement): boolean {
+		const view = this.viewScopeOf(el);
+		if (view) return this.columnsSupported && effectiveFor(this.settings, view.path, this.isPro(), view.view).last;
 		const scope = el.closest(`[${LAST_ATTR}]`);
 		if (scope) return scope.getAttribute(LAST_ATTR) === 'true';
 		return effectiveFor(this.settings, null, this.isPro()).last;
@@ -166,17 +223,53 @@ export default class BasesFreezePanesPlugin extends Plugin {
 	pinPropertyFor(el: HTMLElement): string | null {
 		const scope = el.closest(`[${SCOPE_ATTR}]`);
 		if (!this.settings.enabled || !this.isPro()) return null;
+		const view = this.viewScopeOf(el);
+		if (view && viewChoiceOf(fileChoiceOf(this.settings, view.path), view.view)?.off === true) return null;
 		const property = scope ? scope.getAttribute('data-bfp-property') ?? '' : this.settings.pinProperty;
 		if (!property) return null;
 		return /^(note|file|formula)\./.test(property) ? property : `note.${property}`;
 	}
 
-	/** Removes one file's choice (the list in the settings). */
+	/** Removes the off switch and the column count of one file (the list in the settings). Its view choices stay. */
 	async forgetFileChoice(path: string): Promise<void> {
-		const files = { ...this.settings.files };
-		delete files[path];
-		this.settings = { ...this.settings, files };
+		this.settings = withoutFileLevel(this.settings, path);
 		await this.saveAndRefresh();
+	}
+
+	/** Removes the choice of one view (the list in the settings). */
+	async forgetViewChoice(path: string, view: string): Promise<void> {
+		this.settings = withViewChoice(this.settings, path, view, null);
+		await this.saveAndRefresh();
+	}
+
+	/** Sets or removes (null) the choice of one view. Returns false when the file already has MAX_VIEWS view choices. */
+	async setViewChoice(path: string, view: string, choice: ViewChoice | null): Promise<boolean> {
+		const next = withViewChoice(this.settings, path, view, choice);
+		if (next === this.settings && choice !== null) {
+			new Notice(`This file already has choices for ${MAX_VIEWS} views. Delete one in the settings first.`);
+			return false;
+		}
+		this.settings = next;
+		await this.saveAndRefresh();
+		return true;
+	}
+
+	/**
+	 * The view of the active tab: the view of a base file, or the one named view embedded in a note.
+	 * Null when the tab shows no named view, or when a note shows more than one view.
+	 */
+	currentViewTarget(): ViewTarget | null {
+		const file = this.app.workspace.getActiveFile();
+		if (!isTableFile(file)) return null;
+		const leaf = this.app.workspace.getMostRecentLeaf();
+		if (!leaf || (leaf.view as { file?: unknown }).file !== file) return null;
+		const names = new Set<string>();
+		leaf.view.containerEl.querySelectorAll(VIEW_SELECTOR).forEach((el) => {
+			const name = viewNameOf(el);
+			if (name) names.add(name);
+		});
+		const [view] = names;
+		return names.size === 1 && view ? { file, view } : null;
 	}
 
 	/** Writes the current choice onto every tab, then asks each table on screen to lay out its rows again. */
@@ -185,6 +278,8 @@ export default class BasesFreezePanesPlugin extends Plugin {
 		const seen = new Set<HTMLElement>();
 		this.app.workspace.iterateAllLeaves((leaf) => {
 			this.markLeaf(leaf);
+			this.markViews(leaf.view.containerEl);
+			this.observeViews(leaf.view.containerEl);
 			seen.add(leaf.view.containerEl);
 			const file = (leaf.view as { file?: unknown }).file;
 			if (!(file instanceof TFile) || file.extension !== 'md') return;
@@ -200,6 +295,50 @@ export default class BasesFreezePanesPlugin extends Plugin {
 			this.unmark(el);
 			this.marked.delete(el);
 		}
+		for (const [el, observer] of this.viewObservers) {
+			if (seen.has(el)) continue;
+			observer.disconnect();
+			this.viewObservers.delete(el);
+		}
+	}
+
+	/** Marks every Bases view in a tab and redraws the views whose choice changed. */
+	private markViews(root: HTMLElement): void {
+		root.querySelectorAll<HTMLElement>(VIEW_SELECTOR).forEach((viewEl) => {
+			if (this.markView(viewEl)) viewEl.dispatchEvent(new Event('scroll'));
+		});
+	}
+
+	/**
+	 * Writes the header choice of one view on its element. Returns true when the state changed.
+	 * A view without its own choice has no view class, so the class of the tab applies.
+	 */
+	private markView(viewEl: HTMLElement): boolean {
+		const view = this.viewScopeOf(viewEl);
+		const eff = view ? effectiveFor(this.settings, view.path, this.isPro(), view.view) : null;
+		const state = eff ? `${view?.path}|${view?.view}|${String(eff.header)}|${eff.columns}|${String(eff.last)}` : '';
+		viewEl.toggleClass(VIEW_HEADER_CLASS, eff?.header === true);
+		viewEl.toggleClass(VIEW_NO_HEADER_CLASS, eff?.header === false);
+		if (this.viewStates.get(viewEl) === state) return false;
+		this.viewStates.set(viewEl, state);
+		return true;
+	}
+
+	/** Redraws a view when the core changes its name, for example when the user picks another view in the tab. */
+	private observeViews(root: HTMLElement): void {
+		if (this.viewObservers.has(root)) return;
+		const Observer = root.ownerDocument.defaultView?.MutationObserver ?? MutationObserver;
+		const observer = new Observer((records) => {
+			for (const record of records) {
+				const target = record.target as HTMLElement;
+				// The core writes the attribute on each update of the view; only a new name needs a redraw.
+				if (record.oldValue === target.getAttribute(VIEW_NAME_ATTR) || !target.matches?.(VIEW_SELECTOR)) continue;
+				this.markView(target);
+				target.dispatchEvent(new Event('scroll'));
+			}
+		});
+		observer.observe(root, { subtree: true, attributes: true, attributeOldValue: true, attributeFilter: [VIEW_NAME_ATTR] });
+		this.viewObservers.set(root, observer);
 	}
 
 	private markLeaf(leaf: WorkspaceLeaf): void {
@@ -211,8 +350,10 @@ export default class BasesFreezePanesPlugin extends Plugin {
 		const state = () => `${el.getAttribute(SCOPE_ATTR)}|${el.getAttribute(LAST_ATTR)}|${String(el.hasClass(HEADER_CLASS))}|${el.style.getPropertyValue(HEIGHT_PROP)}|${el.getAttribute('data-bfp-property')}`;
 		const before = state();
 		el.setAttribute(SCOPE_ATTR, String(columns));
+		if (path === null) el.removeAttribute(PATH_ATTR);
+		else el.setAttribute(PATH_ATTR, path);
 		el.setAttribute(LAST_ATTR, String(this.columnsSupported && eff.last));
-		el.setAttribute('data-bfp-property', this.isPro() && this.settings.enabled && !this.settings.files[path ?? '']?.off ? this.settings.pinProperty : '');
+		el.setAttribute('data-bfp-property', this.isPro() && this.settings.enabled && !fileChoiceOf(this.settings, path)?.off ? this.settings.pinProperty : '');
 		el.toggleClass(HEADER_CLASS, eff.header);
 		el.setCssProps({ [HEIGHT_PROP]: `${this.settings.embedHeight}px` });
 		this.marked.add(el);
@@ -221,10 +362,12 @@ export default class BasesFreezePanesPlugin extends Plugin {
 
 	private unmark(el: HTMLElement): void {
 		el.removeAttribute(SCOPE_ATTR);
+		el.removeAttribute(PATH_ATTR);
 		el.removeAttribute(LAST_ATTR);
 		el.removeAttribute('data-bfp-property');
 		el.removeClass(HEADER_CLASS);
 		el.style.removeProperty(HEIGHT_PROP);
+		el.querySelectorAll(`.${VIEW_HEADER_CLASS}, .${VIEW_NO_HEADER_CLASS}`).forEach((view) => view.removeClass(VIEW_HEADER_CLASS, VIEW_NO_HEADER_CLASS));
 	}
 
 	/** A scroll event makes the core table pick its visible cells again, which runs the column patch. */
@@ -239,15 +382,16 @@ export default class BasesFreezePanesPlugin extends Plugin {
 	}
 
 	private async toggleFile(file: TFile): Promise<void> {
-		const off = this.settings.files[file.path]?.off === true;
-		this.settings = withFileChoice(this.settings, file.path, { ...this.settings.files[file.path], off: !off });
+		const current = fileChoiceOf(this.settings, file.path);
+		const off = current?.off === true;
+		this.settings = withFileChoice(this.settings, file.path, { ...current, off: !off });
 		await this.saveAndRefresh();
 		new Notice(off ? `Frozen panes on for ${file.basename}.` : `Frozen panes off for ${file.basename}.`);
 	}
 
 	private async setFileColumns(file: TFile, columns: number | null): Promise<void> {
-		const current = this.settings.files[file.path] ?? {};
-		this.settings = withFileChoice(this.settings, file.path, { off: current.off, columns: columns ?? undefined });
+		const current = fileChoiceOf(this.settings, file.path) ?? {};
+		this.settings = withFileChoice(this.settings, file.path, { ...current, columns: columns ?? undefined });
 		await this.saveAndRefresh();
 		const count = effectiveFor(this.settings, file.path, this.isPro()).columns;
 		new Notice(`${file.basename}: ${count} frozen ${count === 1 ? 'column' : 'columns'}.`);
@@ -283,5 +427,86 @@ class ColumnsModal extends SuggestModal<ColumnsChoice> {
 
 	onChooseSuggestion(choice: ColumnsChoice): void {
 		this.onPick(choice.columns);
+	}
+}
+
+const COLUMNS_FROM_FILE = 'file';
+
+/** The choices for one view: on or off, the header row and the frozen columns (Pro). Each change is saved at once. */
+export class ViewChoiceModal extends Modal {
+	constructor(
+		app: App,
+		private readonly plugin: BasesFreezePanesPlugin,
+		private readonly target: ViewTarget,
+	) {
+		super(app);
+	}
+
+	onOpen(): void {
+		this.setTitle(`Frozen panes for the view ${this.target.view}`);
+		this.render();
+	}
+
+	onClose(): void {
+		this.contentEl.empty();
+	}
+
+	private current(): ViewChoice {
+		return { ...viewChoiceOf(fileChoiceOf(this.plugin.settings, this.target.file.path), this.target.view) };
+	}
+
+	private async save(choice: ViewChoice | null): Promise<void> {
+		await this.plugin.setViewChoice(this.target.file.path, this.target.view, choice);
+		this.render();
+	}
+
+	private render(): void {
+		const { contentEl } = this;
+		const { file, view } = this.target;
+		const settings = this.plugin.settings;
+		const choice = this.current();
+		const pro = this.plugin.isPro();
+		const fileColumns = effectiveFor(settings, file.path, pro).columns;
+		contentEl.empty();
+		contentEl.createEl('p', { text: `These choices apply to the view ${view} in ${file.name}. Other views use the file choice.`, cls: 'setting-item-description' });
+		new Setting(contentEl)
+			.setName('Freeze this view')
+			.setDesc('Off leaves this view exactly as the app draws it.')
+			.addToggle((toggle) =>
+				toggle.setValue(choice.off !== true).onChange((on) => {
+					void this.save({ ...choice, off: on ? undefined : true });
+				}),
+			);
+		new Setting(contentEl)
+			.setName('Freeze the header row')
+			.setDesc('Off also removes the height cap of this view when a note embeds it.')
+			.setDisabled(choice.off === true)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(choice.header ?? settings.freezeHeader)
+					.setDisabled(choice.off === true)
+					.onChange((on) => {
+						void this.save({ ...choice, header: on });
+					}),
+			);
+		new Setting(contentEl)
+			.setName('Frozen columns')
+			.setDesc(pro ? `From 0 to ${MAX_FROZEN} columns for this view.` : `Pro. Without pro, this view uses the file choice (${fileColumns}).`)
+			.setDisabled(choice.off === true || !pro)
+			.addDropdown((dropdown) => {
+				dropdown.addOption(COLUMNS_FROM_FILE, `Use the file choice (${fileColumns})`);
+				for (let n = 0; n <= MAX_FROZEN; n++) dropdown.addOption(String(n), `${n} frozen ${n === 1 ? 'column' : 'columns'}`);
+				dropdown
+					.setValue(choice.columns === undefined ? COLUMNS_FROM_FILE : String(choice.columns))
+					.setDisabled(choice.off === true || !pro)
+					.onChange((value) => {
+						void this.save({ ...choice, columns: value === COLUMNS_FROM_FILE ? undefined : Number(value) });
+					});
+			});
+		new Setting(contentEl).addButton((button) =>
+			button.setButtonText('Use the file choice').onClick(() => {
+				void this.plugin.setViewChoice(file.path, view, null).then(() => this.close());
+			}),
+		);
 	}
 }

@@ -57,6 +57,17 @@
 		"wait": 900
 	},
 	{
+		"feature": "view-choice",
+		"caption": "Set frozen panes for the current view: the Wide view keeps 3 frozen columns, other views use the file choice.",
+		"note": "Shelf views.base",
+		"eval": "(async () => { const p = app.plugins.plugins['bases-freeze-panes']; p.pro.opts.http = async () => ({ status: 200, json: { data: { viewer: { login: 'demo-reader' }, user: { sponsorshipForViewerAsSponsor: { isActive: true, isOneTimePayment: false, tier: { name: '$5 a month', monthlyPriceInCents: 500 } } } } } }); app.secretStorage.setSecret('bases-freeze-panes-github-token', 'gho_' + '0'.repeat(36)); await p.pro.refreshNow(); app.workspace.getMostRecentLeaf().view.controller?.selectView('Wide'); await new Promise((r) => setTimeout(r, 600)); await p.setViewChoice(app.workspace.getActiveFile().path, 'Wide', { columns: 3 }); const v = [...document.querySelectorAll('.workspace-leaf.mod-active .bases-view')].find((x) => x.offsetParent); v.scrollTop = 0; v.scrollLeft = 400; await new Promise((r) => setTimeout(r, 400)); return 'ok'; })()",
+		"commands": [
+			"bases-freeze-panes:set-view"
+		],
+		"after": "document.querySelector('.modal .modal-close-button')?.click(); app.plugins.plugins['bases-freeze-panes'].pro.signOut(); app.plugins.plugins['bases-freeze-panes'].settings.files = {}; app.plugins.plugins['bases-freeze-panes'].refresh(); 'ok'",
+		"wait": 900
+	},
+	{
 		"feature": "settings",
 		"caption": "Settings: the Pro section before sign in, then the main switch, the header row, the frozen columns and the height of embedded tables.",
 		"eval": "(async () => { app.plugins.plugins['bases-freeze-panes'].pro.signOut(); app.setting.open(); app.setting.openTabById('bases-freeze-panes'); return 'ok'; })()",

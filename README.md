@@ -2,7 +2,7 @@
 
 Bases Freeze Panes keeps the header and first column of a Bases table in view while you scroll, like a spreadsheet.
 
-It supports base files, note embeds and base code blocks. The header and first column are free. Pro adds 2 or 3 frozen columns, a column count for single files, a pinned last column, and a property pin. A total payment of $15 meets the payment requirement for Pro without further payment. Sign-in and the checks below still apply.
+It supports base files, note embeds and base code blocks. The header and first column are free. Pro adds 2 or 3 frozen columns, a column count for single files and views, a pinned last column, and a property pin. A total payment of $15 meets the payment requirement for Pro without further payment. Sign-in and the checks below still apply.
 
 ## Features
 
@@ -14,43 +14,41 @@ Pro costs $15 one time or $5 a month: [Sponsor](https://github.com/sponsors/thel
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/base-file.png" alt="A base file scrolled down and to the right with the header row and the file name column in place" width="720">
 
-In a base wider than the screen, the first column stays in place when you scroll right. The other columns slide under it, and a thin line marks its edge.
-
-The plugin keeps frozen cells on the page and pins them. The header has a solid background.
+In a wide base, the first column stays in place when you scroll right. The other columns slide under it, and a thin line marks its edge. The header has a solid background.
 
 ### Embedded bases keep their header
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/embedded-base.png" alt="A base embedded in a note scrolls inside its own box, and its header row sticks at the top" width="720">
 
-An embedded base normally grows to the full height of its rows, so its header scrolls away with the note.
+An embedded base normally grows to the height of all its rows, so its header scrolls away with the note.
 
-Bases Freeze Panes gives embedded tables a maximum height, 500 pixels by default. A taller table scrolls inside this box, so its header row sticks to the top. Short tables keep their normal height.
+The plugin caps embedded tables at 500 pixels by default. A taller table scrolls inside this box, so its header row sticks to the top.
 
 ### Frozen Markdown and Dataview tables
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/note-tables.png" alt="A Markdown table in its own scroll box with the header and first column in view" width="720">
 
-Turn on "Freeze Markdown and Dataview tables" in the settings. This free feature gives each rendered table in a note tab its own scroll box. Hover previews and canvas cards do not change. The header stays at the top, and the first column stays on the left. Cell text does not wrap, so a wide table scrolls to the side. It works in reading view and live preview. Source text does not change.
+Turn on "Freeze Markdown and Dataview tables" in the settings. This free feature gives each rendered table in a note tab its own scroll box. The header stays at the top, and the first column stays on the left. Cell text does not wrap, so a wide table scrolls to the side. It works in reading view and live preview.
 
-The main switch and the file switch also apply. Turn off "Freeze the header row" to let the header scroll. Set "Frozen columns" to 0 to let the first column scroll. Note tables freeze at most one column, with or without Pro. They use the embedded table height setting. Dataview queries need the Dataview plugin.
+The main switch, the file switch, the header switch, "Frozen columns" (0 or 1) and the height setting apply. Dataview queries need the Dataview plugin.
 
 ### Two or three frozen columns (Pro)
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/two-columns.png" alt="Two frozen columns keep the title and the author in view" width="720">
 
-With Pro you can freeze 2 or 3 columns, for example the file name and the author of a book. Each frozen column keeps its own width and place. Change the column order in the base to choose which come first.
+With Pro you can freeze 2 or 3 columns, for example the file name and the author of a book. Change the column order in the base to choose which come first.
 
 ### Pinned last column (Pro)
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/last-column.png" alt="The last column of a wide base stays at the right edge while the middle columns scroll" width="720">
 
-Turn on "Freeze the last column" to keep it at the right edge. The middle columns scroll between the frozen columns. Use it for a status, a total or a due date.
+Turn on "Freeze the last column" to keep it at the right edge. Use it for a status, a total or a due date.
 
 ### Pin a property (Pro)
 
-Type a property name in "Pin a property", for example `author`, `note.author` or `formula.total`. When that property is visible in a Bases table, it stays beside the leading frozen columns. It can be a middle column; you do not need to move it to the start. A hidden property stays hidden.
+Type a property name in "Pin a property", for example `author`, `note.author` or `formula.total`. When that property is visible in a Bases table, it stays beside the leading frozen columns. A hidden property stays hidden.
 
-Clear the field to remove this pin. The main switch and the file switch apply. If the property is also the last column, the property pin uses the left edge. This setting does not change rendered Markdown or Dataview tables.
+Clear the field to remove this pin. If the property is also the last column, it uses the left edge. Note tables do not change.
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/pin-property.png" alt="The author property stays beside the title while the middle columns scroll" width="720">
 
@@ -64,7 +62,7 @@ Freezing works for every table view of a base in a note: embedded base files, ba
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/light-theme.png" alt="The frozen cells stay solid in the light theme" width="720">
 
-Frozen cells use theme background colors, so the cells that slide under them stay hidden. This applies to the header, normal rows, the row under the pointer and summary rows.
+Frozen cells use theme colors, so the cells that slide under them stay hidden.
 
 ### Choices for one file
 
@@ -76,6 +74,18 @@ Two commands change one base file or note:
 - "Set frozen columns for the current file" picks 0 to 3 columns for that file. This one needs Pro.
 
 Each choice moves with its file or folder when you rename or move it, and goes away when you delete the file. The settings list the choices.
+
+### Choices for one view
+
+<img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/view-choice.png" alt="The command modal for one view with the view switch, the header switch and the frozen columns" width="720">
+
+A wide view may need frozen columns while a narrow view does not. Open the view, then run "Set frozen panes for the current view". In a note, it needs exactly one embedded view.
+
+- "Freeze this view" and "Freeze the header row" are free. Header off also removes the height cap of an embedded view.
+- "Frozen columns" sets 0 to 3 columns for the view. This needs Pro.
+- "Use the file choice" removes the view choice.
+
+A view choice is saved with the open file, so a base-tab choice does not reach notes that embed the view. It wins over the file choice, but a file that is off stays off. A renamed view leaves its old `file > view` choice in the settings to delete. Markdown and Dataview tables ignore view choices.
 
 ## Install
 
@@ -113,8 +123,9 @@ After a minor or major update, this plugin opens one What's new tab in the backg
 | Freeze the last column | Off | On or off (Pro) |
 | Pin a property | Empty | A visible property name (Pro) |
 | Embedded table height | 500 | 200 to 1200 pixels, in steps of 50 |
+| Choices for single files | Empty | File choices and `file > view` choices from the commands |
 
-"Choices for single files" lists files with their own choice; delete an entry to remove it. If a saved value is out of range, the plugin moves it to the nearest allowed value.
+Delete an entry in "Choices for single files" to remove it. If a saved value is out of range, the plugin moves it to the nearest allowed value.
 
 ## FAQ
 
@@ -128,11 +139,11 @@ No. It writes only its own settings file, `data.json` in the plugin folder.
 
 ### What happens after an Obsidian update?
 
-The Bases table has no public interface for this, so the plugin checks that the table looks as expected before it changes anything. If a future update changes the table, the columns are no longer frozen and the settings tab says so. The header row keeps working.
+The plugin checks the Bases table before it changes anything. If a future update changes the table, columns stop freezing and the settings tab says so. The header row keeps working.
 
 ### Why is the outline of the selected cell not visible in a frozen column?
 
-The core app draws that outline in a separate layer that does not know about frozen columns. You can still click and edit the cell.
+The core app draws that outline in a separate layer. You can still click and edit the cell.
 
 ### Does it work for cards and list views?
 
