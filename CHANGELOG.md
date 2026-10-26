@@ -1,5 +1,11 @@
 # bases-freeze-panes
 
+## 1.5.1
+
+### Patch Changes
+
+- The Pro notice for frozen columns in one file now has a Sponsor on GitHub button.
+
 ## 1.5.0
 
 ### Minor Changes
