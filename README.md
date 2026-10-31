@@ -4,11 +4,32 @@ Bases Freeze Panes keeps the header and first column of a Bases table in view wh
 
 It supports base files, note embeds and base code blocks. The header and first column are free. Pro adds 2 or 3 frozen columns, a column count for single files and views, a pinned last column, and a property pin. A total payment of $15 meets the payment requirement for Pro without further payment. Sign-in and the checks below still apply.
 
+## Quick start
+
+Paste this into a note:
+
+```base
+views:
+  - type: table
+    name: All notes
+    order:
+      - file.name
+      - file.folder
+      - file.path
+      - file.ext
+      - file.size
+      - file.ctime
+      - file.mtime
+      - file.tags
+```
+
+Freezing works for every table view of a base in a note: embedded base files, base code blocks, live preview and reading view. In a wide base, the first column stays in place when you scroll right. The plugin caps embedded tables at 500 pixels by default. A taller table scrolls inside this box, so its header row sticks to the top.
+
 ## Features
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/bases-freeze-panes.gif" alt="Scrolling a wide base down and to the right while the header row and the file name column stay put" width="720">
 
-Pro costs $15 one time or $5 a month: [Sponsor](https://github.com/sponsors/theluckystrike?metadata_source=bases-freeze-panes) or [$15 one-time offer](https://github.com/sponsors/theluckystrike/sponsorships?tier_id=666162&metadata_source=bases-freeze-panes).
+Pro costs $15 one time or $5 a month: [Sponsor](https://github.com/sponsors/theluckystrike?frequency=one-time&metadata_source=bases-freeze-panes) or [$15 one-time offer](https://github.com/sponsors/theluckystrike/sponsorships?tier_id=666162&metadata_source=bases-freeze-panes).
 
 ### Frozen header and first column in base files
 
@@ -153,7 +174,7 @@ No. Only table views have rows and columns to freeze.
 
 The core features are free. Pro features need a GitHub Sponsors sponsorship of theluckystrike: $5 a month or more, or $15 once. A total payment of $15 meets the payment requirement for Pro without further payment. Sign-in and the checks below still apply. Your notes stay readable and editable with or without Pro.
 
-GitHub handles the payment. Sponsor at https://github.com/sponsors/theluckystrike. You need no account for the free features. Pro needs the GitHub account that sponsors.
+GitHub handles the payment. Sponsor at https://github.com/sponsors/theluckystrike?frequency=one-time&metadata_source=bases-freeze-panes. You need no account for the free features. Pro needs the GitHub account that sponsors.
 
 Until you select "Sign in with GitHub" in the settings, Bases Freeze Panes makes no network requests. Sign in uses the GitHub device flow. Bases Freeze Panes sends its public client ID and the scope `read:user` to `https://github.com/login/device/code` and shows you a code. While you enter the code at https://github.com/login/device, it asks `https://github.com/login/oauth/access_token` every few seconds to check the sign-in status. The scope permits profile reads only. GitHub needs this access to show the sponsorship tier. It grants no repository scope and no write access.
 
