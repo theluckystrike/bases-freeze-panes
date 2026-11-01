@@ -2,7 +2,7 @@
 
 Bases Freeze Panes keeps the header and first column of a Bases table in view while you scroll, like a spreadsheet.
 
-It supports base files, note embeds and base code blocks. The header and first column are free. Pro adds 2 or 3 frozen columns, a column count for single files and views, a pinned last column, and a property pin. A total payment of $15 meets the payment requirement for Pro without further payment. Sign-in and the checks below still apply.
+It supports base files, note embeds and base code blocks. The header and first column are free. A total payment of $15 meets the payment requirement for Pro without further payment. Sign-in and the checks below still apply.
 
 ## Quick start
 
@@ -41,8 +41,6 @@ In a wide base, the first column stays in place when you scroll right. The other
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/embedded-base.png" alt="A base embedded in a note scrolls inside its own box, and its header row sticks at the top" width="720">
 
-An embedded base normally grows to the height of all its rows, so its header scrolls away with the note.
-
 The plugin caps embedded tables at 500 pixels by default. A taller table scrolls inside this box, so its header row sticks to the top.
 
 ### Frozen Markdown and Dataview tables
@@ -57,17 +55,17 @@ The main switch, the file switch, the header switch, "Frozen columns" (0 or 1) a
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/two-columns.png" alt="Two frozen columns keep the title and the author in view" width="720">
 
-With Pro you can freeze 2 or 3 columns, for example the file name and the author of a book. Change the column order in the base to choose which come first.
+Change the column order in the base to choose which columns come first.
 
 ### Pinned last column (Pro)
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/last-column.png" alt="The last column of a wide base stays at the right edge while the middle columns scroll" width="720">
 
-Turn on "Freeze the last column" to keep it at the right edge. Use it for a status, a total or a due date.
+Turn on "Freeze the last column" for a status, a total or a due date.
 
 ### Pin a property (Pro)
 
-Type a property name in "Pin a property", for example `author`, `note.author` or `formula.total`. When that property is visible in a Bases table, it stays beside the leading frozen columns. A hidden property stays hidden.
+Type a property name in "Pin a property", for example `author`, `note.author` or `formula.total`. A hidden property stays hidden.
 
 Clear the field to remove this pin. If the property is also the last column, it uses the left edge. Note tables do not change.
 
@@ -124,6 +122,17 @@ Bases Freeze Panes needs Obsidian 1.13.4 or newer and the Bases core plugin. Tes
 4. For Pro, sponsor on GitHub, then open the settings and select "Sign in with GitHub".
 
 ## Pro
+
+The command "What Pro adds" shows each with a demo.
+
+<img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/what-pro.png" alt="The What Pro adds window with a Try it demo" width="720">
+
+- Freeze 2 or 3 columns on the left. The free version freezes 1 column.
+- Set the number of frozen columns for one file or for one view of a base.
+- Keep the last column at the right edge while you scroll sideways.
+- Pin a property, so that its column stays next to the frozen columns.
+
+Sponsor $5 a month, or $15 once. When you have paid $15 in total, Pro stays on.
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-freeze-panes/HEAD/docs/pro-settings.png" alt="The Pro section of the settings after sign in, with the GitHub account and the Pro status" width="720">
 

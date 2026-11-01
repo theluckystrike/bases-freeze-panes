@@ -126,5 +126,13 @@
 		"eval": "(async () => { const p = app.plugins.plugins['bases-freeze-panes']; p.pro.opts.http = async () => ({status:200,json:{data:{viewer:{login:'demo-reader'},user:{sponsorshipForViewerAsSponsor:{isActive:true,isOneTimePayment:false,tier:{name:'$5 a month',monthlyPriceInCents:500}}}}}}); app.secretStorage.setSecret('bases-freeze-panes-github-token','gho_'+'0'.repeat(36)); await p.pro.refreshNow(); p.settings.columns = 1; p.settings.pinProperty = 'author'; p.refresh(); await new Promise(r=>setTimeout(r,500)); const box = [...document.querySelectorAll('.workspace-leaf.mod-active .bases-view[data-view-type=table]')].find(v=>v.offsetParent); box.scrollTop = 400; box.scrollLeft = 800; await new Promise(r=>setTimeout(r,500)); const frozen = [...box.querySelectorAll('.bases-thead .bfp-frozen')]; if (frozen.length !== 2) throw new Error('Expected two pinned header cells, got '+frozen.length); return 'property pin PASS'; })()",
 		"after": "app.plugins.plugins['bases-freeze-panes'].settings.pinProperty = ''; app.plugins.plugins['bases-freeze-panes'].pro.signOut(); app.plugins.plugins['bases-freeze-panes'].refresh(); 'ok'",
 		"wait": 800
+	},
+	{
+		"feature": "what-pro",
+		"caption": "The command \"What Pro adds\" lists each Pro feature with a Try it demo, the price, Sponsor $15 once and Sign in with GitHub.",
+		"note": "Reading log.base",
+		"eval": "(async () => { document.querySelectorAll('.modal-container').forEach(el => el.remove()); app.commands.executeCommandById('bases-freeze-panes:what-pro-adds'); await new Promise(r=>setTimeout(r,600)); const m=document.querySelector('.modal.pf-whatpro'); if(!m) throw new Error('What Pro adds did not open'); const b=Array.from(m.querySelectorAll('button')).map(x=>x.textContent); if(!b.includes('Sponsor $15 once')||!b.includes('Sign in with GitHub')) throw new Error('Missing buttons: '+b.join(',')); m.querySelector('.pf-whatpro-feature button').click(); await new Promise(r=>setTimeout(r,500)); const d=m.querySelector('.pf-whatpro-demo'); if(!d || d.textContent.includes('could not run') || (d.textContent.trim()==='' && !d.querySelector('svg, table'))) throw new Error('No demo'); return 'ok'; })()",
+		"after": "(async () => { document.querySelectorAll('.modal-container').forEach(el => el.remove()); return 'ok'; })()",
+		"wait": 700
 	}
 ]

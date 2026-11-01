@@ -1,6 +1,6 @@
 import { Modal, Notice, Plugin, Setting, SuggestModal, TFile, type App, type WorkspaceLeaf } from 'obsidian';
 import type { SponsorsManager } from './license/index';
-import { createGitHubSponsors, guardSponsorsPro } from './license/github-obsidian';
+import { WHAT_PRO_TITLE, createGitHubSponsors, showProNoticeWithWhatPro } from './license/github-obsidian';
 import { MAX_FROZEN } from './layout';
 import { NoteTables, type NoteTableScope } from './note-tables';
 import { END_CLASS, FROZEN_CLASS, LAST_CLASS, ROW_CLASS, installColumnPatch, type ColumnPatch } from './patch';
@@ -9,6 +9,7 @@ import { DEFAULT_SETTINGS, MAX_VIEWS, effectiveFor, fileChoiceOf, normalizeSetti
 import { BasesFreezePanesSettingTab } from './settings';
 import { setupHello } from './hello/index';
 import WHATS_NEW from './whats-new.json';
+import { openWhatPro } from './what-pro';
 
 const SCOPE_ATTR = 'data-bfp-columns';
 const LAST_ATTR = 'data-bfp-last';
@@ -96,10 +97,13 @@ export default class BasesFreezePanesPlugin extends Plugin {
 			checkCallback: (checking) => {
 				const file = this.app.workspace.getActiveFile();
 				if (!isTableFile(file)) return false;
-				if (!checking) guardSponsorsPro(pro, () => new ColumnsModal(this.app, this.settings.columns, (columns) => void this.setFileColumns(file, columns)).open())();
+				if (!checking) this.proOnly('Frozen columns for one file', () => new ColumnsModal(this.app, this.settings.columns, (columns) => void this.setFileColumns(file, columns)).open());
 				return true;
 			},
 		});
+
+		// Opens only on this command, the settings button or the link in the Pro notice. Never at startup.
+		this.addCommand({ id: 'what-pro-adds', name: WHAT_PRO_TITLE, callback: () => this.openWhatPro() });
 
 		this.addCommand({
 			id: 'set-view',
@@ -164,6 +168,23 @@ export default class BasesFreezePanesPlugin extends Plugin {
 	}
 
 	/** Pro from the cached GitHub Sponsors answer. Never sends a request. */
+	/** The "What Pro adds" window: each Pro feature with a demo on a sample table, the price and the sign in. */
+	openWhatPro(): void {
+		openWhatPro(this.app, this.pro, this.manifest.id, this.manifest.name);
+	}
+
+	/**
+	 * Runs a Pro action. Without Pro it shows the shared Pro notice with the same text as before, plus a "What Pro adds"
+	 * link, and does nothing. feature names the action for the reader of the code.
+	 */
+	proOnly(feature: string, action: () => void): void {
+		if (this.pro?.isPro()) {
+			action();
+			return;
+		}
+		showProNoticeWithWhatPro(this.pro, 'This is a pro feature.', () => this.openWhatPro());
+	}
+
 	isPro(): boolean {
 		return this.pro?.isPro() ?? false;
 	}

@@ -1,5 +1,5 @@
 import { PluginSettingTab, type SettingDefinition, type SettingDefinitionItem } from 'obsidian';
-import { sponsorsSettingItems } from './license/github-obsidian';
+import { sponsorsSettingItemsWithWhatPro } from './license/github-obsidian';
 import { MAX_FROZEN } from './layout';
 import { PRO_UI } from './pro';
 import { DEFAULT_SETTINGS, EMBED_HEIGHT_MAX, EMBED_HEIGHT_MIN, FREE_COLUMNS, normalizeSettings, type FileChoice, type FreezeSettings, type ViewChoice } from './scope';
@@ -67,7 +67,7 @@ export class BasesFreezePanesSettingTab extends PluginSettingTab {
 		const rows = choiceRows(this.plugin.settings, pro());
 		const fileItems: SettingDefinition[] = rows.map((row) => ({ name: row.name, desc: row.desc }));
 		return [
-			...(this.plugin.pro ? sponsorsSettingItems(this.plugin.pro, PRO_UI) : []),
+			...(this.plugin.pro ? sponsorsSettingItemsWithWhatPro(this.plugin.pro, PRO_UI, () => this.plugin.openWhatPro()) : []),
 			{
 				name: 'Freeze panes',
 				desc: 'Main switch. Off leaves every Bases table exactly as the app draws it.',
