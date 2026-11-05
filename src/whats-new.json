@@ -1,10 +1,9 @@
 {
 	"id": "bases-freeze-panes",
 	"name": "Bases Freeze Panes",
-	"version": "1.5.3",
+	"version": "1.5.4",
 	"changes": [
-		"New command \"What Pro adds\": read each Pro feature and try it on a sample table.",
-		"The Pro section of the settings and the Pro notice also open \"What Pro adds\"."
+		"The Pro notice of Bases Freeze Panes now says that one payment turns on Pro in every NoteMods plugin."
 	],
 	"tip": "Turn on 'Freeze Markdown and Dataview tables' to pin headers in ordinary note tables.",
 	"thanks": "Hi, I am Michael, a solo developer in Poland. Bases Freeze Panes is one of over 100 small plugins that I make. Thank you for using it with Bases. Bases is still new, and your setups teach me a lot.",

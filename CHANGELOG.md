@@ -1,5 +1,11 @@
 # bases-freeze-panes
 
+## 1.5.4
+
+### Patch Changes
+
+- The Pro notice of Bases Freeze Panes now says that one payment turns on Pro in every NoteMods plugin.
+
 ## 1.5.3
 
 ### Patch Changes
