@@ -1,7 +1,7 @@
 {
 	"id": "bases-freeze-panes",
 	"name": "Bases Freeze Panes",
-	"version": "1.5.4",
+	"version": "1.5.5",
 	"changes": [
 		"The Pro notice of Bases Freeze Panes now says that one payment turns on Pro in every NoteMods plugin."
 	],

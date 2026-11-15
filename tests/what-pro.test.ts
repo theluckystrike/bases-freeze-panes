@@ -52,7 +52,7 @@ describe('What Pro adds: price and button', () => {
 	it('the Sponsor $15 once button opens the one-time tab with metadata_source=<plugin id>-whatpro', () => {
 		const m = whatProModel(null, { pluginId: manifest.id, features: PRO_FEATURES, priceText: PRO_UI.priceText }, SPONSORS);
 		expect(m.sponsorText).toBe('Sponsor $15 once');
-		expect(m.sponsorUrl).toBe('https://github.com/sponsors/theluckystrike?frequency=one-time&metadata_source=bases-freeze-panes-whatpro-all');
+		expect(m.sponsorUrl).toBe('https://github.com/sponsors/theluckystrike/sponsorships?tier_id=666162&frequency=one-time&metadata_source=bases-freeze-panes-whatpro-all');
 		expect(m.sponsorUrl).toBe(whatProUrl(SPONSORS, manifest.id));
 		expect(m.priceText).toBe(PRO_UI.priceText);
 	});
@@ -60,7 +60,15 @@ describe('What Pro adds: price and button', () => {
 
 describe('What Pro adds: demos on a sample table', () => {
 	const result = (el: HTMLElement): string => el.querySelector('.pf-whatpro-demo-result')?.textContent ?? '';
-	const sticky = (el: HTMLElement): string[] => [...el.querySelectorAll<HTMLElement>('tr:first-child th')].filter((c) => c.style.position === 'sticky').map((c) => c.textContent ?? '');
+	// s1115a A2: the static styles moved from setCssStyles to styles.css (eslint-plugin-obsidianmd no-static-styles-assignment).
+	// A cell sticks when it has a class whose styles.css rule sets position sticky.
+	const css = readFileSync(join(ROOT, 'styles.css'), 'utf8');
+	const rule = (selector: string): string => {
+		const at = css.indexOf(`${selector} {`);
+		return at < 0 ? '' : css.slice(at, css.indexOf('}', at));
+	};
+	const stickyClass = (c: HTMLElement): boolean => c.hasClass('pf-whatpro-cell') && ['is-frozen', 'is-end'].some((k) => c.hasClass(k) && /position: sticky;/.test(rule(`.pf-whatpro-cell.${k}`)));
+	const sticky = (el: HTMLElement): string[] => [...el.querySelectorAll<HTMLElement>('tr:first-child th')].filter((c) => c.hasClass('is-frozen') && stickyClass(c)).map((c) => c.textContent ?? '');
 	it('columns: 3 frozen columns stick to the left edge with the offsets of the planner', () => {
 		const el = demo('columns');
 		expect(result(el)).toBe('Frozen on the left: Name, Author, Year.');
@@ -78,7 +86,8 @@ describe('What Pro adds: demos on a sample table', () => {
 		expect(result(el)).toBe('Frozen on the left: Name. Pinned to the right edge: Status.');
 		const end = el.querySelector<HTMLElement>('tr:first-child th.is-end');
 		expect(end?.textContent).toBe('Status');
-		expect(end?.style.right).toBe('0px');
+		expect(end && stickyClass(end)).toBe(true);
+		expect(rule('.pf-whatpro-cell.is-end')).toMatch(/right: 0;/);
 	});
 
 	it('pin: the Rating column moves next to the frozen column', () => {

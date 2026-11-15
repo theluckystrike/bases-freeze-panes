@@ -40,20 +40,19 @@ export function tableDemo(el: HTMLElement, frozen: number, pinLast: boolean, pin
 	};
 	el.createEl('p', { text: 'Scroll the sample table sideways.', cls: 'pf-whatpro-demo-label' });
 	const wrap = el.createDiv({ cls: 'pf-whatpro-table-wrap' });
-	wrap.setCssStyles({ overflowX: 'auto', maxWidth: '100%', border: '1px solid var(--background-modifier-border)' });
 	const table = wrap.createEl('table', { cls: 'pf-whatpro-table' });
-	table.setCssStyles({ borderCollapse: 'separate', borderSpacing: '0', tableLayout: 'fixed', width: `${WIDTHS.reduce((s, w) => s + w, 0)}px`, margin: '0' });
+	// Static table styles are in styles.css (.pf-whatpro-table). Only the computed sizes are set here.
+	table.setCssStyles({ width: `${WIDTHS.reduce((s, w) => s + w, 0)}px` });
 	const drawRow = (cells: string[], tag: 'th' | 'td'): void => {
 		const tr = table.createEl('tr');
 		for (const c of order) {
-			const cell = tr.createEl(tag, { text: cells[c.index] ?? '' });
-			cell.setCssStyles({ width: `${c.width}px`, padding: '4px 8px', whiteSpace: 'nowrap', overflow: 'hidden', backgroundColor: 'var(--background-primary)' });
+			const cell = tr.createEl(tag, { text: cells[c.index] ?? '', cls: 'pf-whatpro-cell' });
+			cell.setCssStyles({ width: `${c.width}px` });
 			if (c.frozen) {
 				cell.addClass('is-frozen');
-				cell.setCssStyles({ position: 'sticky', left: `${c.start}px`, zIndex: '1', backgroundColor: 'var(--background-secondary)' });
+				cell.setCssStyles({ left: `${c.start}px` });
 			} else if (c.index === plan.end) {
 				cell.addClass('is-end');
-				cell.setCssStyles({ position: 'sticky', right: '0', zIndex: '1', backgroundColor: 'var(--background-secondary)' });
 			}
 		}
 	};

@@ -157,3 +157,37 @@
 	flex-wrap: wrap;
 	justify-content: flex-start;
 }
+
+/* What Pro adds: sample table. Static styles live here, widths and offsets stay in what-pro.ts. */
+.pf-whatpro-table-wrap {
+	overflow-x: auto;
+	max-width: 100%;
+	border: 1px solid var(--background-modifier-border);
+}
+
+.pf-whatpro-table-wrap table.pf-whatpro-table {
+	border-collapse: separate;
+	border-spacing: 0;
+	table-layout: fixed;
+	margin: 0;
+}
+
+.pf-whatpro-cell {
+	padding: 4px 8px;
+	white-space: nowrap;
+	overflow: hidden;
+	background-color: var(--background-primary);
+}
+
+.pf-whatpro-cell.is-frozen {
+	position: sticky;
+	z-index: 1;
+	background-color: var(--background-secondary);
+}
+
+.pf-whatpro-cell.is-end {
+	position: sticky;
+	right: 0;
+	z-index: 1;
+	background-color: var(--background-secondary);
+}
